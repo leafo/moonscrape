@@ -20,7 +20,7 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
       {"updated_at", time}
     }
 
-    create_index "queued_urls", "depth", "id"
+    create_index "queued_urls", "status", "depth", "id"
 
     create_table "pages", {
       {"id", serial}
