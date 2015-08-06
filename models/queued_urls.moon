@@ -1,5 +1,5 @@
 
-db = require "laips.db"
+db = require "lapis.db"
 import Model, enum from require "lapis.db.model"
 
 class QueuedUrls extends Model
@@ -7,17 +7,33 @@ class QueuedUrls extends Model
 
   @statuses: enum {
     queued: 1
-    fetching: 2
+    running: 2
     complete: 3
+  }
+
+  @relations: {
+    {"page", has_one: "Pages"}
   }
 
   @create: (opts) =>
     assert opts.url, "missing URL"
-    opts.status = @statuses\for_db opts.status or "fetching"
-    Model.create @
+    opts.status = @statuses\for_db opts.status or "queued"
+    opts.tags = db.array opts.tags if opts.tags
+    Model.create @, opts
 
   @get_next: =>
-    -- db.update @table_name!, {
-    --   status: @statuses.fetching
-    -- }, "where "
+    res = db.update @table_name!, {
+      status: @statuses.running
+    }, "
+      id in (
+        select id from #{db.escape_identifier @table_name!}
+        where status = ? order by depth asc limit 1 for update
+      ) returning *
+    ", @statuses.queued
+
+    res = unpack res
+    if res
+      @load res
+    else
+      nil, "queue empty"
 
