@@ -30,11 +30,13 @@ describe "models.queued_urls", ->
       {"http://butt.leafo.net", "./coolthings", "http://butt.leafo.net/coolthings"}
       {"http://butt.leafo.net", "../coolthings", "http://butt.leafo.net/coolthings"}
 
+      {"http://butt.leafo.net/hi", "coolthings", "http://butt.leafo.net/coolthings"}
       {"http://butt.leafo.net/hi", "./coolthings", "http://butt.leafo.net/coolthings"}
       {"http://butt.leafo.net/hi", "../coolthings", "http://butt.leafo.net/coolthings"}
       {"http://butt.leafo.net/hi", "./././../coolthings", "http://butt.leafo.net/coolthings"}
       {"http://butt.leafo.net/hi", "../../coolthings", "http://butt.leafo.net/coolthings"}
 
+      {"http://butt.leafo.net/hi/", "coolthings", "http://butt.leafo.net/hi/coolthings"}
       {"http://butt.leafo.net/hi/", "./coolthings", "http://butt.leafo.net/hi/coolthings"}
       {"http://butt.leafo.net/hi/", "../coolthings", "http://butt.leafo.net/coolthings"}
       {"http://butt.leafo.net/hi/", "./././../coolthings", "http://butt.leafo.net/coolthings"}
