@@ -95,6 +95,20 @@ class QueuedUrls extends Model
     scheme, host, rest = @url\match "(%w+)://([^/]+)(.*)$"
     error "couldn't parse url: #{@url}" unless scheme
     url_parts = [p for p in rest\gmatch "[^/]+"]
+
+    -- remove frament if it exists
+    for i, p in ipairs url_parts
+      if p\match "#"
+        p = p\gsub "#.*", ""
+
+        url_parts = if p == ""
+          { unpack url_parts, 1, i - 1 }
+        else
+          url_parts[i] = p
+          { unpack url_parts, 1, i }
+
+        break
+
     for path_part in path\gmatch "[^/]+"
       switch path_part
         when "."

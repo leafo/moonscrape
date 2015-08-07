@@ -53,7 +53,7 @@ describe "models.queued_urls", ->
       assert.same "http://butt.leafo.net/hi#hello",
         url\join "#hello"
 
-    it "parses fragments", ->
+    it "joins fragments", ->
       assert.same "http://leafo.net#hello",
         u("http://leafo.net")\join "#hello"
 
@@ -74,5 +74,16 @@ describe "models.queued_urls", ->
 
       assert.same "http://leafo.net/okay#hello/world",
         u("http://leafo.net/yeah")\join "../okay#hello/world"
+
+      assert.same "http://leafo.net/yeah#whazz",
+        u("http://leafo.net/yeah#okay")\join "#whazz"
+
+      assert.same "http://leafo.net#whazz",
+        u("http://leafo.net/#okay")\join "#whazz"
+
+      assert.same "http://leafo.net/a#whazz",
+        u("http://leafo.net/a/#okay")\join "#whazz"
+
+    it "joins query params", ->
 
 
