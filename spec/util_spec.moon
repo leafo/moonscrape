@@ -39,4 +39,11 @@ describe "moonscrape.util", ->
       it "normalize_url(#{url}) should be #{expected}", ->
         assert.same expected, normalize_url url
 
+  describe "decode_html_entities #ddd" ,->
+    import decode_html_entities from require "moonscrape.util"
+
+    it "decodes string", ->
+      assert.same "mailto:leafot@gmail.com",
+        decode_html_entities "&#x6d;&#x61;&#x69;&#108;&#x74;&#x6f;&#x3a;&#108;&#101;&#x61;&#x66;&#x6f;&#x74;&#x40;&#x67;&#109;&#97;&#105;&#108;&#x2e;&#x63;&#x6f;&#x6d;"
+
 
