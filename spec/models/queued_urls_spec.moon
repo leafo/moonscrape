@@ -24,8 +24,10 @@ describe "models.queued_urls", ->
 
 
   describe "join", ->
+    u = (url) -> QueuedUrls\load(:url)
+
     it "parses url with no path", ->
-      url = QueuedUrls\load url: "http://butt.leafo.net"
+      url = u "http://butt.leafo.net"
 
       assert.same "http://butt.leafo.net/coolthings",
         url\join "./coolthings"
@@ -34,7 +36,7 @@ describe "models.queued_urls", ->
         url\join "../coolthings"
 
     it "parses url with path", ->
-      url = QueuedUrls\load url: "http://butt.leafo.net/hi"
+      url = u "http://butt.leafo.net/hi"
 
       assert.same "http://butt.leafo.net/hi/coolthings",
         url\join "./coolthings"
@@ -48,5 +50,29 @@ describe "models.queued_urls", ->
       assert.same "http://butt.leafo.net/coolthings",
         url\join "../../coolthings"
 
+      assert.same "http://butt.leafo.net/hi#hello",
+        url\join "#hello"
+
+    it "parses fragments", ->
+      assert.same "http://leafo.net#hello",
+        u("http://leafo.net")\join "#hello"
+
+      assert.same "http://leafo.net#hello/world",
+        u("http://leafo.net")\join "#hello/world"
+
+      assert.same "http://leafo.net#hello",
+        u("http://leafo.net/")\join "#hello"
+
+      assert.same "http://leafo.net/yeah#hello",
+        u("http://leafo.net/yeah")\join "#hello"
+
+      assert.same "http://leafo.net/yeah#hello",
+        u("http://leafo.net/yeah")\join "./#hello"
+
+      assert.same "http://leafo.net#hello",
+        u("http://leafo.net/yeah")\join "../#hello"
+
+      assert.same "http://leafo.net/okay#hello/world",
+        u("http://leafo.net/yeah")\join "../okay#hello/world"
 
 

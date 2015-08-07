@@ -93,9 +93,20 @@ class QueuedUrls extends Model
 
     url_out = "#{scheme}://#{host}"
 
-    out_path = table.concat url_parts, "/"
-    if out_path != ""
+    -- extract fragment
+    local fragment
+    for i, p in ipairs url_parts
+      if p\match "^#"
+        fragment = table.concat {unpack url_parts, i}, "/"
+        url_parts = { unpack url_parts, 1, i - 1 }
+
+    out_path = url_parts[1] and table.concat url_parts, "/"
+
+    if out_path
       url_out ..= "/#{out_path}"
+
+    if fragment
+      url_out ..= fragment
 
     url_out
 
