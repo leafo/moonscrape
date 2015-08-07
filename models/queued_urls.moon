@@ -9,6 +9,7 @@ class QueuedUrls extends Model
     queued: 1
     running: 2
     complete: 3
+    failed: 4
   }
 
   @relations: {
@@ -36,4 +37,39 @@ class QueuedUrls extends Model
       @load res
     else
       nil, "queue empty"
+
+  queue: (url_opts, ...) =>
+    import queue from require "moonscrape"
+
+    if type(url_opts) == "string"
+      url_opts = { url: url_opts }
+
+    url_opts.parent_queued_url_id = @id
+    url_opts.depth = @depth + 1
+
+    queue url_opts, ...
+
+  fetch: =>
+    assert @status == @@statuses.running, "invalid status for fetch"
+    http = require "socket.http"
+    import Pages from require "models"
+
+    colors = require "ansicolors"
+    print colors "%{bright}%{cyan}Fetching:%{reset} #{@url}"
+
+    body, status, headers = http.request @url
+
+    page = Pages\create {
+      :body
+      :status
+      queued_url_id: @id
+    }
+
+    url_status = if "#{status}"\match "^5"
+      "failed"
+    else
+      "complete"
+
+    @update status: QueuedUrls.statuses\for_db url_status
+    page
 
