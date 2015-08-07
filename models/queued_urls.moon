@@ -73,3 +73,30 @@ class QueuedUrls extends Model
     @update status: QueuedUrls.statuses\for_db url_status
     page
 
+  -- calculate absolute url from relative path
+  join: (path) =>
+    -- TODO: support scheme relative URLs
+    if path\match "^%w+://"
+      return path
+
+    scheme, host, rest = @url\match "(%w+)://([^/]+)(.*)$"
+    error "couldn't parse url: #{@url}" unless scheme
+    url_parts = [p for p in rest\gmatch "[^/]+"]
+    for path_part in path\gmatch "[^/]+"
+      switch path_part
+        when "."
+          nil
+        when ".."
+          table.remove url_parts
+        else
+          table.insert url_parts, path_part
+
+    url_out = "#{scheme}://#{host}"
+
+    out_path = table.concat url_parts, "/"
+    if out_path != ""
+      url_out ..= "/#{out_path}"
+
+    url_out
+
+
