@@ -16,7 +16,7 @@ test_db:
 	pg_dump -a -t lapis_migrations -U postgres moonscrape | psql -U postgres moonscrape_test
 
 lint:
-	moonc lint_config.moon
+	tup
 	moonc -l $$(find moonscrape | grep moon$$)
 	moonc -l $$(find spec | grep moon$$)
 	moonc -l $$(find models | grep moon$$)
