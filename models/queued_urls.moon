@@ -19,10 +19,12 @@ class QueuedUrls extends Model
   }
 
   @has_url: (scraper, url) =>
-    -- TODO: check redirect urls as well
-    QueuedUrls\find {
+    url_match = db.encode_clause :url
+    redirect_match = db.interpolate_query "(redirects is not null and ? <@ redirects)", db.array({url})
+
+    not not QueuedUrls\find {
       project: scraper.project or db.NULL
-      url: url
+      [db.TRUE]: db.raw "(#{url_match} OR #{redirect_match})"
     }
 
   @create: (opts) =>
