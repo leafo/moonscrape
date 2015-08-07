@@ -1,15 +1,17 @@
 
 import queue, run from require "moonscrape"
-import is_relative_url from require "moonscrape.util"
+import is_relative_url, decode_html_entities from require "moonscrape.util"
 
 import query_all from require "web_sanitize.query"
 
 handle_result = (url, page) ->
-  print "working on #{url.url} #{page} (#{page.status})"
+  print "working on #{url.url} (#{page.status})"
   return if page.status != 200
 
   for link in *query_all page.body, "a"
     href = link.attr and link.attr.href
+    href = href and decode_html_entities href
+
     if href and is_relative_url href
       tags = {}
 
