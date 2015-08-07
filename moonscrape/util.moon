@@ -7,6 +7,7 @@ is_relative_url = (url) ->
   true
 
 normalize_url = (url) ->
-  (url\gsub("#.*$", ""))
+  url = url\gsub("#.*$", "")\gsub "(//[^/]+)/$", "%1"
+  url
 
 { :is_relative_url, :normalize_url }

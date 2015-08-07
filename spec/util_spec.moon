@@ -30,8 +30,11 @@ describe "moonscrape.util", ->
 
     for {url, expected} in *{
       {"http://leafo.net", "http://leafo.net"}
-      {"http://leafo.net/", "http://leafo.net/"}
-      {"http://leafo.net/#hello", "http://leafo.net/"}
+      {"http://leafo.net/", "http://leafo.net"}
+      {"http://leafo.net/#hello", "http://leafo.net"}
+
+      {"http://leafo.net/hello", "http://leafo.net/hello"}
+      {"http://leafo.net/hello/", "http://leafo.net/hello/"}
     }
       it "normalize_url(#{url}) should be #{expected}", ->
         assert.same expected, normalize_url url
