@@ -91,25 +91,34 @@ class QueuedUrls extends Model
   join: (path) =>
     -- TODO: support scheme relative URLs
     return path unless is_relative_url path
+    return @url if path == ""
 
     scheme, host, rest = @url\match "(%w+)://([^/]+)(.*)$"
     error "couldn't parse url: #{@url}" unless scheme
 
     rest = rest\gsub "[?#].*$", ""
     in_directory = rest == "" or rest\match "/$"
+
     url_parts = [p for p in rest\gmatch "[^/]+"]
 
-    path_head, path_tail = path\match "(.-)([?#].*)$"
+    path_head, path_tail = path\match "(.-)(/?[?#].*)$"
     path = path_head if path_head
 
-    for path_part in path\gmatch "[^/]+"
-      switch path_part
-        when "."
-          nil
-        when ".."
-          table.remove url_parts
-        else
-          table.insert url_parts, path_part
+    if path\match "^/"
+      url_parts = {(path\gsub "^/", "")}
+    else
+      for path_part in path\gmatch "[^/]+"
+        switch path_part
+          when "."
+            nil
+          when ".."
+            table.remove url_parts
+          else
+            unless in_directory
+              table.remove url_parts
+              in_directory = true
+
+            table.insert url_parts, path_part
 
     url_out = "#{scheme}://#{host}"
 
