@@ -157,6 +157,7 @@ class QueuedUrls extends Model
     page = Pages\create {
       :body
       :status
+      content_type: headers["content-type"]
       queued_url_id: @id
     }
 

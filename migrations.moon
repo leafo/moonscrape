@@ -35,6 +35,7 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
       {"updated_at", time}
       {"status", integer}
       {"body", text}
+      {"content_type", text null: true}
 
       {"queued_url_id", foreign_key}
     }
