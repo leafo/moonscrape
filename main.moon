@@ -1,11 +1,16 @@
 
-import queue, run from require "moonscrape"
+import Scraper from require "moonscrape"
 import is_relative_url, decode_html_entities from require "moonscrape.util"
-
 import query_all from require "web_sanitize.query"
 
-handle_result = (url, page) ->
+scraper = Scraper project: "leafo.net"
+
+handle_result = (url, page) =>
   return if page.status != 200
+
+  -- skip the directory listings
+  if page.body\match "Proudly Served by LiteSpeed Web Server"
+    return
 
   for link in *query_all page.body, "a"
     href = link.attr and link.attr.href
@@ -19,6 +24,6 @@ handle_result = (url, page) ->
 
       url\queue { :tags, url: href }, handle_result
 
-queue "http://leafo.net", handle_result
 
-run!
+scraper\queue "http://leafo.net", handle_result
+scraper\run!

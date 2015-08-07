@@ -30,7 +30,7 @@ class Scraper
         continue
 
       if cb = @callbacks[next_url.id]
-        cb next_url, page
+        cb @, next_url, page
 
   queue: (url_opts, callback) =>
     if type(url_opts) == "string"
@@ -41,7 +41,9 @@ class Scraper
     if not url_opts.force and @has_url url_opts.url
       return nil, "skipping URL already fetched"
 
+    url_opts.scraper = @
     url = QueuedUrls\create url_opts
+
     @callbacks[url.id] = callback
 
 default_scraper = Scraper!
