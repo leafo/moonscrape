@@ -94,20 +94,13 @@ class QueuedUrls extends Model
 
     scheme, host, rest = @url\match "(%w+)://([^/]+)(.*)$"
     error "couldn't parse url: #{@url}" unless scheme
+
+    rest = rest\gsub "[?#].*$", ""
+    in_directory = rest == "" or rest\match "/$"
     url_parts = [p for p in rest\gmatch "[^/]+"]
 
-    -- remove frament/query params if exists
-    for i, p in ipairs url_parts
-      if token = p\match "[#?]"
-        p = p\gsub "[#{token}].*", ""
-
-        url_parts = if p == ""
-          { unpack url_parts, 1, i - 1 }
-        else
-          url_parts[i] = p
-          { unpack url_parts, 1, i }
-
-        break
+    path_head, path_tail = path\match "(.-)([?#].*)$"
+    path = path_head if path_head
 
     for path_part in path\gmatch "[^/]+"
       switch path_part
@@ -120,20 +113,13 @@ class QueuedUrls extends Model
 
     url_out = "#{scheme}://#{host}"
 
-    -- extract fragment
-    local fragment
-    for i, p in ipairs url_parts
-      if p\match "^#"
-        fragment = table.concat {unpack url_parts, i}, "/"
-        url_parts = { unpack url_parts, 1, i - 1 }
-
     out_path = url_parts[1] and table.concat url_parts, "/"
 
     if out_path
       url_out ..= "/#{out_path}"
 
-    if fragment
-      url_out ..= fragment
+    if path_tail
+      url_out ..= path_tail
 
     url_out
 
