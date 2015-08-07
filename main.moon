@@ -5,7 +5,6 @@ import is_relative_url, decode_html_entities from require "moonscrape.util"
 import query_all from require "web_sanitize.query"
 
 handle_result = (url, page) ->
-  print "working on #{url.url} (#{page.status})"
   return if page.status != 200
 
   for link in *query_all page.body, "a"

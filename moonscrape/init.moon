@@ -26,8 +26,6 @@ queue = (url_opts, callback) ->
   url_opts.url = normalize_url url_opts.url
 
   if not url_opts.force and has_url url_opts.url
-    -- colors = require "ansicolors"
-    -- print colors "%{bright}%{yellow}Skipping:%{reset} #{url_opts.url}"
     return nil, "skipping URL already fetched"
 
   url = QueuedUrls\create url_opts

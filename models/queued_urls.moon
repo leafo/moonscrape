@@ -69,9 +69,19 @@ class QueuedUrls extends Model
     import Pages from require "models"
 
     colors = require "ansicolors"
-    print colors "%{bright}%{cyan}Fetching:%{reset} #{@url}"
+    io.stdout\write colors "%{bright}%{cyan}Fetching:%{reset} #{@url}"
 
     body, status, headers = http.request @url
+
+    status_color = switch ("#{status}")\sub 1,1
+      when "2"
+        "green"
+      when "3"
+        "yellow"
+      else
+        "red"
+
+    print colors " [%{#{status_color}}#{status}%{reset}]"
 
     page = Pages\create {
       :body
