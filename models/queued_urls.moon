@@ -18,6 +18,13 @@ class QueuedUrls extends Model
     {"page", has_one: "Pages"}
   }
 
+  @has_url: (scraper, url) =>
+    -- TODO: check redirect urls as well
+    QueuedUrls\find {
+      project: scraper.project or db.NULL
+      url: url
+    }
+
   @create: (opts) =>
     assert opts.url, "missing URL"
 
@@ -31,26 +38,40 @@ class QueuedUrls extends Model
     else
       nil
 
-    Model.create @, opts
+    scraper = opts.scraper
+    opts.project = scraper and scraper.project or db.NULL
 
-  @get_next: =>
+    opts.scraper = nil
+
+    with Model.create @, opts
+      .scraper = scraper
+
+  @get_next: (scraper) =>
+    clause = db.encode_clause {
+      project: scraper.project or db.NULL
+      status: @statuses.queued
+    }
+
     res = db.update @table_name!, {
       status: @statuses.running
     }, "
       id in (
         select id from #{db.escape_identifier @table_name!}
-        where status = ? order by depth asc limit 1 for update
+        where #{clause}
+        order by depth asc limit 1 for update
       ) returning *
-    ", @statuses.queued
+    "
 
     res = unpack res
+
     if res
-      @load res
+      with @load res
+        .scraper = scraper
     else
       nil, "queue empty"
 
   queue: (url_opts, ...) =>
-    import queue from require "moonscrape"
+    assert @scraper, "missing scraper for QueuedUrls\\queue"
 
     if type(url_opts) == "string"
       url_opts = { url: url_opts }
@@ -61,7 +82,7 @@ class QueuedUrls extends Model
     assert url_opts.url, "missing URL for fetch"
     url_opts.url = @join url_opts.url
 
-    queue url_opts, ...
+    @scraper\queue url_opts, ...
 
   fetch: =>
     assert @status == @@statuses.running, "invalid status for fetch"

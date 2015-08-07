@@ -12,6 +12,7 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
   [1438794661]: ->
     create_table "queued_urls", {
       {"id", serial}
+      {"project", text null: true}
       {"url", text}
       {"depth", integer}
       {"parent_queued_url_id", foreign_key null: true}
@@ -25,8 +26,8 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
       {"redirects", text array: true, null: true}
     }
 
-    create_index "queued_urls", "status", "depth", "id"
-    create_index "queued_urls", "url"
+    create_index "queued_urls", "project", "status", "depth", "id"
+    create_index "queued_urls", "project", "url"
 
     create_table "pages", {
       {"id", serial}
