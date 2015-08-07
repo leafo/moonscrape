@@ -10,6 +10,8 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
 
 {
   [1438794661]: ->
+    db.query "CREATE EXTENSION IF NOT EXISTS btree_gin"
+
     create_table "queued_urls", {
       {"id", serial}
       {"project", text null: true}
@@ -28,6 +30,8 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
 
     create_index "queued_urls", "project", "status", "depth", "id"
     create_index "queued_urls", "project", "url"
+    create_index "queued_urls", "tags", method: "GIN"
+    create_index "queued_urls", "project", "redirects", method: "GIN"
 
     create_table "pages", {
       {"id", serial}
