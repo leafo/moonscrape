@@ -2,6 +2,8 @@
 db = require "lapis.db"
 import Model, enum from require "lapis.db.model"
 
+import is_relative_url from require "moonscrape.util"
+
 class QueuedUrls extends Model
   @timestamp: true
 
@@ -18,8 +20,17 @@ class QueuedUrls extends Model
 
   @create: (opts) =>
     assert opts.url, "missing URL"
+
+    if is_relative_url opts.url
+      error "Must get full URL for queued URL, got relative: #{opts.url}"
+
     opts.status = @statuses\for_db opts.status or "queued"
-    opts.tags = db.array opts.tags if opts.tags
+
+    opts.tags = if opts.tags and next opts.tags
+      db.array opts.tags
+    else
+      nil
+
     Model.create @, opts
 
   @get_next: =>
@@ -46,6 +57,9 @@ class QueuedUrls extends Model
 
     url_opts.parent_queued_url_id = @id
     url_opts.depth = @depth + 1
+
+    assert url_opts.url, "missing URL for fetch"
+    url_opts.url = @join url_opts.url
 
     queue url_opts, ...
 
@@ -76,8 +90,7 @@ class QueuedUrls extends Model
   -- calculate absolute url from relative path
   join: (path) =>
     -- TODO: support scheme relative URLs
-    if path\match "^%w+://"
-      return path
+    return path unless is_relative_url path
 
     scheme, host, rest = @url\match "(%w+)://([^/]+)(.*)$"
     error "couldn't parse url: #{@url}" unless scheme
