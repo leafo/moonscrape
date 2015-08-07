@@ -26,64 +26,36 @@ describe "models.queued_urls", ->
   describe "join", ->
     u = (url) -> QueuedUrls\load(:url)
 
-    it "parses url with no path", ->
-      url = u "http://butt.leafo.net"
+    for {url, path, expected} in *{
+      {"http://butt.leafo.net", "./coolthings", "http://butt.leafo.net/coolthings"}
+      {"http://butt.leafo.net", "../coolthings", "http://butt.leafo.net/coolthings"}
 
-      assert.same "http://butt.leafo.net/coolthings",
-        url\join "./coolthings"
+      {"http://butt.leafo.net/hi", "./coolthings", "http://butt.leafo.net/hi/coolthings"}
+      {"http://butt.leafo.net/hi", "../coolthings", "http://butt.leafo.net/coolthings"}
+      {"http://butt.leafo.net/hi", "./././../coolthings", "http://butt.leafo.net/coolthings"}
+      {"http://butt.leafo.net/hi", "../../coolthings", "http://butt.leafo.net/coolthings"}
+    }
+      it "#{url} + #{path} -> #{expected}", ->
+        assert.same expected, u(url)\join path
 
-      assert.same "http://butt.leafo.net/coolthings",
-        url\join "../coolthings"
+    describe "joins fragments", ->
+      for {url, path, expected} in *{
+        {"http://leafo.net", "#hello", "http://leafo.net#hello"}
+        {"http://leafo.net", "#hello/world", "http://leafo.net#hello/world"}
+        {"http://leafo.net/", "#hello", "http://leafo.net#hello"}
+        {"http://leafo.net/yeah", "#hello", "http://leafo.net/yeah#hello"}
+        {"http://leafo.net/yeah", "./#hello", "http://leafo.net/yeah#hello"}
+        {"http://leafo.net/yeah", "../#hello", "http://leafo.net#hello"}
+        {"http://leafo.net/yeah", "../okay#hello/world", "http://leafo.net/okay#hello/world"}
+        {"http://leafo.net/yeah#okay", "#whazz", "http://leafo.net/yeah#whazz"}
+        {"http://leafo.net/#okay", "#whazz", "http://leafo.net#whazz"}
+        {"http://leafo.net/a/#okay", "#whazz", "http://leafo.net/a#whazz"}
+      }
+        it "#{url} + #{path} -> #{expected}", ->
+          assert.same expected, u(url)\join path
 
-    it "parses url with path", ->
-      url = u "http://butt.leafo.net/hi"
+    describe "joins query params", ->
 
-      assert.same "http://butt.leafo.net/hi/coolthings",
-        url\join "./coolthings"
 
-      assert.same "http://butt.leafo.net/coolthings",
-        url\join "../coolthings"
-
-      assert.same "http://butt.leafo.net/coolthings",
-        url\join "./././../coolthings"
-
-      assert.same "http://butt.leafo.net/coolthings",
-        url\join "../../coolthings"
-
-      assert.same "http://butt.leafo.net/hi#hello",
-        url\join "#hello"
-
-    it "joins fragments", ->
-      assert.same "http://leafo.net#hello",
-        u("http://leafo.net")\join "#hello"
-
-      assert.same "http://leafo.net#hello/world",
-        u("http://leafo.net")\join "#hello/world"
-
-      assert.same "http://leafo.net#hello",
-        u("http://leafo.net/")\join "#hello"
-
-      assert.same "http://leafo.net/yeah#hello",
-        u("http://leafo.net/yeah")\join "#hello"
-
-      assert.same "http://leafo.net/yeah#hello",
-        u("http://leafo.net/yeah")\join "./#hello"
-
-      assert.same "http://leafo.net#hello",
-        u("http://leafo.net/yeah")\join "../#hello"
-
-      assert.same "http://leafo.net/okay#hello/world",
-        u("http://leafo.net/yeah")\join "../okay#hello/world"
-
-      assert.same "http://leafo.net/yeah#whazz",
-        u("http://leafo.net/yeah#okay")\join "#whazz"
-
-      assert.same "http://leafo.net#whazz",
-        u("http://leafo.net/#okay")\join "#whazz"
-
-      assert.same "http://leafo.net/a#whazz",
-        u("http://leafo.net/a/#okay")\join "#whazz"
-
-    it "joins query params", ->
 
 
