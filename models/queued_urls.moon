@@ -2,7 +2,7 @@
 db = require "lapis.db"
 import Model, enum from require "lapis.db.model"
 
-import is_relative_url from require "moonscrape.util"
+import is_relative_url, normalize_url from require "moonscrape.util"
 
 class QueuedUrls extends Model
   @timestamp: true
@@ -66,22 +66,72 @@ class QueuedUrls extends Model
   fetch: =>
     assert @status == @@statuses.running, "invalid status for fetch"
     http = require "socket.http"
+    ltn12 = require "ltn12"
+
     import Pages from require "models"
 
     colors = require "ansicolors"
     io.stdout\write colors "%{bright}%{cyan}Fetching:%{reset} #{@url}"
 
-    body, status, headers = http.request @url
+    redirects = {}
+    redirects_set = {}
 
-    status_color = switch ("#{status}")\sub 1,1
-      when "2"
-        "green"
-      when "3"
-        "yellow"
+    local status, body, headers
+
+    current_url = @url
+    max_redirects = 10
+
+    finish_log = ->
+      status_color = switch math.floor(status/100)
+        when 2
+          "green"
+        when 3
+          "yellow"
+        else
+          "red"
+
+      print colors " [%{#{status_color}}#{status}%{reset}]"
+
+    while true
+      max_redirects -= 1
+      if max_redirects == 0
+        @mark_failed!
+        finish_log!
+        return nil, "too many redirects"
+
+      buffer = {}
+      _, status, headers = http.request {
+        url: current_url
+        sink: ltn12.sink.table buffer
+        redirect: false
+      }
+      body = table.concat buffer
+
+      if math.floor(status/100) == 3
+        new_url = headers.location
+
+        unless new_url
+          @mark_failed!
+          finish_log!
+          return nil, "missing location"
+
+        new_url = normalize_url new_url
+
+        if redirects_set[new_url]
+          @mark_failed!
+          finish_log!
+          return nil, "redirect loop"
+
+        table.insert redirects, new_url
+        redirects_set[new_url] = true
+        current_url = new_url
       else
-        "red"
+        break
 
-    print colors " [%{#{status_color}}#{status}%{reset}]"
+    if next redirects
+      io.stdout\write " (redirects: #{#redirects})"
+
+    finish_log!
 
     page = Pages\create {
       :body
@@ -94,8 +144,15 @@ class QueuedUrls extends Model
     else
       "complete"
 
-    @update status: QueuedUrls.statuses\for_db url_status
+    @update {
+      status: QueuedUrls.statuses\for_db url_status
+      redirects: redirects[1] and db.array redirects
+    }
+
     page
+
+  mark_failed: =>
+    @update status: QueuedUrls.statuses.failed
 
   -- calculate absolute url from relative path
   join: (path) =>

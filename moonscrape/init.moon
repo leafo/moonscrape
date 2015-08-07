@@ -15,7 +15,13 @@ run = ->
     next_url = QueuedUrls\get_next!
     return unless next_url
 
-    page = next_url\fetch!
+    page, err = next_url\fetch!
+
+    unless page
+      colors = require "ansicolors"
+      print\write colors "%{bright}%{red}Warning:%{reset} #{err}"
+      continue
+
     if cb = callbacks[next_url.id]
       cb next_url, page
 

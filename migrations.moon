@@ -22,6 +22,7 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
       {"updated_at", time}
 
       {"tags", text array: true, null: true}
+      {"redirects", text array: true, null: true}
     }
 
     create_index "queued_urls", "status", "depth", "id"
