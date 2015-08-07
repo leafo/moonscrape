@@ -2,6 +2,7 @@ import use_test_env from require "lapis.spec"
 import truncate_tables from require "lapis.spec.db"
 
 import QueuedUrls from require "models"
+import Scraper from require "moonscrape"
 
 describe "models.queued_urls", ->
   use_test_env!
@@ -10,16 +11,20 @@ describe "models.queued_urls", ->
     truncate_tables QueuedUrls
 
   it "it gets next queued url", ->
+    scraper = Scraper!
+
     QueuedUrls\create {
       url: "http://leafo.net"
+      :scraper
     }
 
     QueuedUrls\create {
       url: "http://leafo.net/stuff"
       depth: 1
+      :scraper
     }
 
-    url = QueuedUrls\get_next!
+    url = QueuedUrls\get_next scraper
     assert.same url.url, "http://leafo.net"
 
 
