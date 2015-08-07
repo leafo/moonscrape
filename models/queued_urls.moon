@@ -156,12 +156,14 @@ class QueuedUrls extends Model
 
   -- calculate absolute url from relative path
   join: (path) =>
+    base_url = @redirects and @redirects[#@redirects] or @url
+
     -- TODO: support scheme relative URLs
     return path unless is_relative_url path
-    return @url if path == ""
+    return base_url if path == ""
 
-    scheme, host, rest = @url\match "(%w+)://([^/]+)(.*)$"
-    error "couldn't parse url: #{@url}" unless scheme
+    scheme, host, rest = base_url\match "(%w+)://([^/]+)(.*)$"
+    error "couldn't parse url: #{base_url}" unless scheme
 
     rest = rest\gsub "[?#].*$", ""
     in_directory = rest == "" or rest\match "/$"
