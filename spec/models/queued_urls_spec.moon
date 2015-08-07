@@ -55,6 +55,16 @@ describe "models.queued_urls", ->
           assert.same expected, u(url)\join path
 
     describe "joins query params", ->
+      for {url, path, expected} in *{
+        {"http://leafo.net", "?hello", "http://leafo.net/?hello"}
+        {"http://leafo.net/?world", "./", "http://leafo.net"}
+        {"http://leafo.net/?world", "?hello", "http://leafo.net/?hello"}
+        {"http://leafo.net/?world=yes", "/good/?no=please", "http://leafo.net/good/?no=please"}
+      }
+        it "#{url} + #{path} -> #{expected}", ->
+          assert.same expected, u(url)\join path
+
+
 
 
 

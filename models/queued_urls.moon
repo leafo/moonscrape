@@ -96,10 +96,10 @@ class QueuedUrls extends Model
     error "couldn't parse url: #{@url}" unless scheme
     url_parts = [p for p in rest\gmatch "[^/]+"]
 
-    -- remove frament if it exists
+    -- remove frament/query params if exists
     for i, p in ipairs url_parts
-      if p\match "#"
-        p = p\gsub "#.*", ""
+      if token = p\match "[#?]"
+        p = p\gsub "[#{token}].*", ""
 
         url_parts = if p == ""
           { unpack url_parts, 1, i - 1 }
