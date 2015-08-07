@@ -25,6 +25,7 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
     }
 
     create_index "queued_urls", "status", "depth", "id"
+    create_index "queued_urls", "url"
 
     create_table "pages", {
       {"id", serial}

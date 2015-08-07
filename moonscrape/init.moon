@@ -3,7 +3,12 @@ http = require "socket.http"
 
 import QueuedUrls, Pages from require "models"
 
+import normalize_url from require "moonscrape.util"
+
 callbacks = {}
+
+has_url = (url) ->
+  QueuedUrls\find url: url
 
 run = ->
   while true
@@ -18,7 +23,15 @@ queue = (url_opts, callback) ->
   if type(url_opts) == "string"
     url_opts = { url: url_opts }
 
+  url_opts.url = normalize_url url_opts.url
+
+  if not url_opts.force and has_url url_opts.url
+    colors = require "ansicolors"
+    print colors "%{bright}%{yellow}Skipping:%{reset} #{url_opts.url}"
+    return nil, "skipping URL already fetched"
+
   url = QueuedUrls\create url_opts
   callbacks[url.id] = callback
 
-{:run, :queue}
+
+{:run, :queue, :has_url}
