@@ -1,6 +1,8 @@
 import use_test_env from require "lapis.spec"
 import truncate_tables from require "lapis.spec.db"
 
+db = require "lapis.db"
+
 import QueuedUrls from require "models"
 import Scraper from require "moonscrape"
 
@@ -27,6 +29,30 @@ describe "models.queued_urls", ->
     url = QueuedUrls\get_next scraper
     assert.same url.url, "http://leafo.net"
 
+  describe "has_url", ->
+    local scraper
+
+    before_each ->
+      scraper = Scraper project: "cool"
+
+    it "detects regular url", ->
+      QueuedUrls\create {
+        url: "http://leafo.net"
+        :scraper
+      }
+
+      assert.true QueuedUrls\has_url scraper, "http://leafo.net"
+      assert.false QueuedUrls\has_url scraper, "http://leafo.net/butt"
+
+    it "detects redirect url", ->
+      QueuedUrls\create {
+        url: "http://leafo.net"
+        redirects: db.array {"http://leafo.net/yeah"}
+        :scraper
+      }
+
+      assert.true QueuedUrls\has_url scraper, "http://leafo.net/yeah"
+      assert.false QueuedUrls\has_url scraper, "http://leafo.net/okay"
 
   describe "join", ->
     u = (url) -> QueuedUrls\load(:url)
@@ -54,7 +80,7 @@ describe "models.queued_urls", ->
 
       {"http://butt.leafo.net/hi/bi", "/okay", "http://butt.leafo.net/okay"}
 
-      {"http://leafo.net/dir/hello", "world", "http://leafo.net/dir/world", "#ddd"}
+      {"http://leafo.net/dir/hello", "world", "http://leafo.net/dir/world"}
     }
       it "#{url} + #{path} -> #{expected} #{tag or ""}", ->
         assert.same expected, u(url)\join path
@@ -87,9 +113,4 @@ describe "models.queued_urls", ->
       }
         it "#{url} + #{path} -> #{expected}", ->
           assert.same expected, u(url)\join path
-
-
-
-
-
 

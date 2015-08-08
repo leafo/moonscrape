@@ -39,7 +39,7 @@ describe "moonscrape.util", ->
       it "normalize_url(#{url}) should be #{expected}", ->
         assert.same expected, normalize_url url
 
-  describe "decode_html_entities #ddd" ,->
+  describe "decode_html_entities" ,->
     import decode_html_entities from require "moonscrape.util"
 
     it "decodes string", ->
