@@ -5,6 +5,7 @@ source = {
   branch = "master"
 }
 description = {
+  summary = "A web scraper for Lua",
   homepage = "http://github.com/leafo/moonscrape",
   license = "MIT"
 }
