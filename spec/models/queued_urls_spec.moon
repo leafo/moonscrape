@@ -30,29 +30,30 @@ describe "models.queued_urls", ->
     assert.same url.url, "http://leafo.net"
 
   describe "has_url", ->
-    local scraper
+    for scraper_fn in *{(-> Scraper(project: "cool")), Scraper}
+      local scraper
 
-    before_each ->
-      scraper = Scraper project: "cool"
+      before_each ->
+        scraper = scraper_fn!
 
-    it "detects regular url", ->
-      QueuedUrls\create {
-        url: "http://leafo.net"
-        :scraper
-      }
+      it "detects regular url", ->
+        QueuedUrls\create {
+          url: "http://leafo.net"
+          :scraper
+        }
 
-      assert.true QueuedUrls\has_url scraper, "http://leafo.net"
-      assert.false QueuedUrls\has_url scraper, "http://leafo.net/butt"
+        assert.true QueuedUrls\has_url scraper, "http://leafo.net"
+        assert.false QueuedUrls\has_url scraper, "http://leafo.net/butt"
 
-    it "detects redirect url", ->
-      QueuedUrls\create {
-        url: "http://leafo.net"
-        redirects: db.array {"http://leafo.net/yeah"}
-        :scraper
-      }
+      it "detects redirect url", ->
+        QueuedUrls\create {
+          url: "http://leafo.net"
+          redirects: db.array {"http://leafo.net/yeah"}
+          :scraper
+        }
 
-      assert.true QueuedUrls\has_url scraper, "http://leafo.net/yeah"
-      assert.false QueuedUrls\has_url scraper, "http://leafo.net/okay"
+        assert.true QueuedUrls\has_url scraper, "http://leafo.net/yeah"
+        assert.false QueuedUrls\has_url scraper, "http://leafo.net/okay"
 
   describe "join", ->
     u = (url) -> QueuedUrls\load(:url)
