@@ -14,6 +14,9 @@ class QueuedUrls extends Model
     failed: 4
   }
 
+  @get_relation_model: (name) =>
+    require("moonscrape.models")[name]
+
   @relations: {
     {"page", has_one: "Pages"}
   }
