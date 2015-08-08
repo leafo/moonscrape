@@ -130,6 +130,9 @@ class QueuedUrls extends Model
         url: current_url
         sink: ltn12.sink.table buffer
         redirect: false
+        headers: {
+          "User-Agent": @scraper.user_agent
+        }
       }
       body = table.concat buffer
 
