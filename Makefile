@@ -9,6 +9,9 @@ init_db:
 	lapis migrate
 	make test_db > /dev/null
 
+local: build
+	luarocks make --local moonscrape-dev-1.rockspec
+
 build:
 	moonc moonscrape
 

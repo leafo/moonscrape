@@ -31,6 +31,9 @@ do
   _base_0.__class = _class_0
   local self = _class_0
   self.timestamp = true
+  self.get_relation_model = function(self, name)
+    return require("moonscrape.models")[name]
+  end
   self.relations = {
     {
       "queued_url",

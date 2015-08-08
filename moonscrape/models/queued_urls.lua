@@ -206,6 +206,9 @@ do
     complete = 3,
     failed = 4
   })
+  self.get_relation_model = function(self, name)
+    return require("moonscrape.models")[name]
+  end
   self.relations = {
     {
       "page",
