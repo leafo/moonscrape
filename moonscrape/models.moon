@@ -1,3 +1,2 @@
 import autoload from require "lapis.util"
-autoload "models"
-
+autoload "moonscrape.models"

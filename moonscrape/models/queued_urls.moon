@@ -91,7 +91,7 @@ class QueuedUrls extends Model
     http = require "socket.http"
     ltn12 = require "ltn12"
 
-    import Pages from require "models"
+    import Pages from require "moonscrape.models"
 
     colors = require "ansicolors"
     io.stdout\write colors "%{bright}%{cyan}Fetching:%{reset} #{@url}"

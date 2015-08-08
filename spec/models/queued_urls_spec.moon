@@ -3,10 +3,10 @@ import truncate_tables from require "lapis.spec.db"
 
 db = require "lapis.db"
 
-import QueuedUrls from require "models"
+import QueuedUrls from require "moonscrape.models"
 import Scraper from require "moonscrape"
 
-describe "models.queued_urls", ->
+describe "moonscrape.models.queued_urls", ->
   use_test_env!
 
   before_each ->

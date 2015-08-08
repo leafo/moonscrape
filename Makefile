@@ -1,12 +1,16 @@
 
-.PHONY: init_db test_db lint
+.PHONY: init_db test_db lint build
 
 init_db:
+	make build
 	tup
 	-dropdb -U postgres moonscrape
 	createdb -U postgres moonscrape
 	lapis migrate
 	make test_db > /dev/null
+
+build:
+	moonc moonscrape
 
 # copy dev db schema into test db
 test_db:

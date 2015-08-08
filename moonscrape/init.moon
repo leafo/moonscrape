@@ -2,7 +2,7 @@
 http = require "socket.http"
 import normalize_url from require "moonscrape.util"
 
-import QueuedUrls, Pages from require "models"
+import QueuedUrls, Pages from require "moonscrape.models"
 
 class Scraper
   project: nil
