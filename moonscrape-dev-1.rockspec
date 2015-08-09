@@ -16,6 +16,7 @@ dependencies = {
   "luasocket",
   "slnunicode",
   "web_sanitize",
+  "luasec",
 }
 
 build = {

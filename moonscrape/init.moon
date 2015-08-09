@@ -74,7 +74,11 @@ class Scraper
     @callbacks[url.id] = callback
 
   request: (url) =>
-    http = require "socket.http"
+    http = if url\match "^https:"
+      require "ssl.https"
+    else
+      require "socket.http"
+
     ltn12 = require "ltn12"
 
     if seconds = @sleep

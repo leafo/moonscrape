@@ -83,7 +83,11 @@ do
       self.callbacks[url.id] = callback
     end,
     request = function(self, url)
-      http = require("socket.http")
+      if url:match("^https:") then
+        http = require("ssl.https")
+      else
+        http = require("socket.http")
+      end
       local ltn12 = require("ltn12")
       do
         local seconds = self.sleep
