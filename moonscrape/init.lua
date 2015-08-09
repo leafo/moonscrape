@@ -26,6 +26,9 @@ do
     has_url = function(self, url)
       return QueuedUrls:has_url(self, url)
     end,
+    url_priority = function(self, url)
+      return 0
+    end,
     filter_page = function(self, queued_url, status, body, headers)
       if not (status == 200) then
         return false, "non 200"
@@ -38,9 +41,31 @@ do
     filter_url = function(self, url)
       return true
     end,
+    _url_clause = function(self)
+      local db = require("lapis.db")
+      return db.encode_clause({
+        project = self.project or db.NULL
+      })
+    end,
+    all_queued = function(self)
+      return QueuedUrls:select("\n      where " .. tostring(self:_url_clause()) .. " and status = ?\n    ", QueuedUrls.statuses.queued)
+    end,
+    reprioritize_queued = function(self)
+      local count = 0
+      local _list_0 = self:all_queued()
+      for _index_0 = 1, #_list_0 do
+        local url = _list_0[_index_0]
+        local priority = self:url_priority(url.url)
+        if priority ~= url.priority then
+          url:update({
+            priority = priority
+          })
+        end
+      end
+    end,
     refilter_queued = function(self)
       local count = 0
-      local _list_0 = QueuedUrls:select("where project = ? and status = 1", self.project or db.NULL)
+      local _list_0 = self:all_queued()
       for _index_0 = 1, #_list_0 do
         local url = _list_0[_index_0]
         if not (self:filter_url(url.url)) then
@@ -49,6 +74,13 @@ do
         end
       end
       return count
+    end,
+    requeue_failed = function(self)
+      local db = require("lapis.db")
+      db.query("\n      delete from pages where queued_url_id in (\n        select id from queued_urls where " .. tostring(self:_url_clause()) .. " and status = ?\n      )\n    ", QueuedUrls.statuses.failed)
+      return db.update(QueuedUrls:table_name(), {
+        status = QueuedUrls.statuses.queued
+      }, tostring(self:_url_clause()) .. " and status = ?", QueuedUrls.statuses.failed)
     end,
     run = function(self)
       local run = Runs:create({
@@ -116,6 +148,7 @@ do
         return nil, "skipping URL already fetched"
       end
       url_opts.scraper = self
+      url_opts.priority = url_opts.priority or self:url_priority(url_opts.url)
       local url = QueuedUrls:create(url_opts)
       self.callbacks[url.id] = callback
       return true
@@ -165,7 +198,8 @@ do
         "filter_url",
         "normalize_url",
         "default_handler",
-        "silent"
+        "silent",
+        "url_priority"
       }
       for _index_0 = 1, #_list_0 do
         local k = _list_0[_index_0]

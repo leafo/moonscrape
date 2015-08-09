@@ -15,7 +15,7 @@ class Scraper
   new: (opts={}) =>
     for k in *{
       "project", "user_agent", "sleep", "filter_page", "filter_url",
-      "normalize_url", "default_handler", "silent"
+      "normalize_url", "default_handler", "silent", "url_priority"
     }
       @[k] = opts[k]
 
@@ -30,6 +30,8 @@ class Scraper
   has_url: (url) =>
     QueuedUrls\has_url @, url
 
+  url_priority: (url) => 0
+
   filter_page: (queued_url, status, body, headers) =>
     unless status == 200
       return false, "non 200"
@@ -42,14 +44,42 @@ class Scraper
   -- queue all urls
   filter_url: (url) => true
 
+  _url_clause: =>
+    db = require "lapis.db"
+    db.encode_clause { project: @project or db.NULL }
+
+  all_queued: =>
+    QueuedUrls\select "
+      where #{@_url_clause!} and status = ?
+    ", QueuedUrls.statuses.queued
+
+  reprioritize_queued: =>
+    count = 0
+    for url in *@all_queued!
+      priority = @url_priority url.url
+      if priority != url.priority
+        url\update(:priority)
+
   refilter_queued: =>
     count = 0
-    for url in *QueuedUrls\select "where project = ? and status = 1", @project or db.NULL
+    for url in *@all_queued!
       unless @filter_url url.url
         url\delete!
         count += 1
 
     count
+
+  requeue_failed: =>
+    db = require "lapis.db"
+    db.query "
+      delete from pages where queued_url_id in (
+        select id from queued_urls where #{@_url_clause!} and status = ?
+      )
+    ", QueuedUrls.statuses.failed
+
+    db.update QueuedUrls\table_name!, {
+      status: QueuedUrls.statuses.queued
+    }, "#{@_url_clause!} and status = ?", QueuedUrls.statuses.failed
 
   run: =>
     run = Runs\create project: @project
@@ -100,7 +130,10 @@ class Scraper
     if not url_opts.force and @has_url url_opts.url
       return nil, "skipping URL already fetched"
 
+
     url_opts.scraper = @
+    url_opts.priority or= @url_priority url_opts.url
+
     url = QueuedUrls\create url_opts
 
     @callbacks[url.id] = callback
