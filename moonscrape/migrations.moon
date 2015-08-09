@@ -16,6 +16,7 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
       {"id", serial}
       {"project", text null: true}
       {"url", text}
+      {"normalized_url", text null: true}
       {"depth", integer}
       {"parent_queued_url_id", foreign_key null: true}
 
@@ -30,6 +31,7 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
 
     create_index "queued_urls", "project", "status", "depth", "id"
     create_index "queued_urls", "project", "url"
+    create_index "queued_urls", "project", "normalized_url"
     create_index "queued_urls", "tags", method: "GIN"
     create_index "queued_urls", "project", "redirects", {
       method: "GIN"

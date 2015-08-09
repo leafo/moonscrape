@@ -26,6 +26,12 @@ return {
         text
       },
       {
+        "normalized_url",
+        text({
+          null = true
+        })
+      },
+      {
         "depth",
         integer
       },
@@ -64,6 +70,7 @@ return {
     })
     create_index("queued_urls", "project", "status", "depth", "id")
     create_index("queued_urls", "project", "url")
+    create_index("queued_urls", "project", "normalized_url")
     create_index("queued_urls", "tags", {
       method = "GIN"
     })

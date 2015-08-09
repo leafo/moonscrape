@@ -51,8 +51,40 @@ do
     end))
   end
 end
+local normalize_url
+normalize_url = function(url)
+  local parse_query_string
+  parse_query_string = require("lapis.util").parse_query_string
+  local query = url:match(".-%?(.*)")
+  if query then
+    local flat_query = { }
+    for _, _des_0 in ipairs(parse_query_string(query)) do
+      local k, v
+      k, v = _des_0[1], _des_0[2]
+      table.insert(flat_query, tostring(k) .. "=" .. tostring(v))
+    end
+    table.sort(flat_query)
+    flat_query = table.concat(flat_query, "&")
+    query = "?" .. tostring(flat_query)
+  else
+    query = ""
+  end
+  local host, path = url:match("//([^/#?]*)(/?[^#?]*)")
+  local port = host:match(":(%d+)$")
+  port = port or "80"
+  if port == "80" then
+    port = ""
+  else
+    port = ":" .. tostring(port)
+  end
+  if path == "/" then
+    path = ""
+  end
+  return tostring(host) .. tostring(port) .. tostring(path) .. tostring(query)
+end
 return {
   is_relative_url = is_relative_url,
   clean_url = clean_url,
+  normalize_url = normalize_url,
   decode_html_entities = decode_html_entities
 }

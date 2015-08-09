@@ -47,3 +47,15 @@ describe "moonscrape.util", ->
         decode_html_entities "&#x6d;&#x61;&#x69;&#108;&#x74;&#x6f;&#x3a;&#108;&#101;&#x61;&#x66;&#x6f;&#x74;&#x40;&#x67;&#109;&#97;&#105;&#108;&#x2e;&#x63;&#x6f;&#x6d;"
 
 
+  describe "normalize_url", ->
+    import normalize_url from require "moonscrape.util"
+
+    for {url, expected} in *{
+      {"http://leafo.net", "leafo.net"}
+      {"http://leafo.net#yeah", "leafo.net"}
+      {"http://leafo.net/#yeah", "leafo.net"}
+      {"http://leafo.net/?hello=world", "leafo.net?hello=world"}
+      {"http://leafo.net/one/two?hello=world&a=b", "leafo.net/one/two?a=b&hello=world"}
+    }
+      it "normalize_url(#{url}) should be #{expected}", ->
+        assert.same expected, normalize_url url

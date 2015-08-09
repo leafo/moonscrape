@@ -25,4 +25,33 @@ decode_html_entities = do
       else
         '&'..tag..';')
 
-{ :is_relative_url, :clean_url, :decode_html_entities }
+-- turn url into a canonical string
+normalize_url = (url) ->
+  import parse_query_string from require "lapis.util"
+  query = url\match ".-%?(.*)"
+
+  query = if query
+    flat_query = {}
+    for _,{k,v} in ipairs parse_query_string(query)
+      table.insert flat_query, "#{k}=#{v}"
+
+    table.sort flat_query
+    flat_query = table.concat(flat_query, "&")
+    "?#{flat_query}"
+  else
+    ""
+
+  host, path = url\match "//([^/#?]*)(/?[^#?]*)"
+  port = host\match ":(%d+)$"
+  port or= "80"
+  port = if port == "80"
+    ""
+  else
+    ":#{port}"
+
+  if path == "/"
+    path = ""
+
+  "#{host}#{port}#{path}#{query}"
+
+{ :is_relative_url, :clean_url, :normalize_url, :decode_html_entities }

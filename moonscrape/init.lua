@@ -1,6 +1,9 @@
 local http = require("socket.http")
-local clean_url
-clean_url = require("moonscrape.util").clean_url
+local clean_url, normalize_url
+do
+  local _obj_0 = require("moonscrape.util")
+  clean_url, normalize_url = _obj_0.clean_url, _obj_0.normalize_url
+end
 local QueuedUrls, Pages
 do
   local _obj_0 = require("moonscrape.models")
@@ -11,6 +14,9 @@ do
   local _base_0 = {
     project = nil,
     user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405",
+    normalize_url = function(self, url)
+      return normalize_url(url)
+    end,
     has_url = function(self, url)
       return QueuedUrls:has_url(self, url)
     end,
@@ -49,6 +55,7 @@ do
         }
       end
       url_opts.url = clean_url(url_opts.url)
+      url_opts.normalized_url = self:normalize_url(url_opts.url)
       if not url_opts.force and self:has_url(url_opts.url) then
         return nil, "skipping URL already fetched"
       end
@@ -66,7 +73,9 @@ do
       local _list_0 = {
         "project",
         "user_agent",
-        "sleep"
+        "sleep",
+        "filter_page",
+        "normalize_url"
       }
       for _index_0 = 1, #_list_0 do
         local k = _list_0[_index_0]

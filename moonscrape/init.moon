@@ -1,6 +1,6 @@
 
 http = require "socket.http"
-import clean_url from require "moonscrape.util"
+import clean_url, normalize_url from require "moonscrape.util"
 
 import QueuedUrls, Pages from require "moonscrape.models"
 
@@ -9,10 +9,13 @@ class Scraper
   user_agent: "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"
 
   new: (opts={}) =>
-    for k in *{"project", "user_agent", "sleep"}
+    for k in *{"project", "user_agent", "sleep", "filter_page", "normalize_url"}
       @[k] = opts[k]
 
     @callbacks = {}
+
+  normalize_url: (url) =>
+    normalize_url url
 
   has_url: (url) =>
     QueuedUrls\has_url @, url
@@ -37,6 +40,7 @@ class Scraper
       url_opts = { url: url_opts }
 
     url_opts.url = clean_url url_opts.url
+    url_opts.normalized_url = @normalize_url url_opts.url
 
     if not url_opts.force and @has_url url_opts.url
       return nil, "skipping URL already fetched"
