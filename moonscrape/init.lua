@@ -38,6 +38,18 @@ do
     filter_url = function(self, url)
       return true
     end,
+    refilter_queued = function(self)
+      local count = 0
+      local _list_0 = QueuedUrls:select("where project = ? and status = 1", self.project or db.NULL)
+      for _index_0 = 1, #_list_0 do
+        local url = _list_0[_index_0]
+        if not (self:filter_url(url.url)) then
+          url:delete()
+          count = count + 1
+        end
+      end
+      return count
+    end,
     run = function(self)
       local run = Runs:create({
         project = self.project

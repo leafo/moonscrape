@@ -42,6 +42,15 @@ class Scraper
   -- queue all urls
   filter_url: (url) => true
 
+  refilter_queued: =>
+    count = 0
+    for url in *QueuedUrls\select "where project = ? and status = 1", @project or db.NULL
+      unless @filter_url url.url
+        url\delete!
+        count += 1
+
+    count
+
   run: =>
     run = Runs\create project: @project
 
