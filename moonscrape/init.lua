@@ -20,6 +20,18 @@ do
     has_url = function(self, url)
       return QueuedUrls:has_url(self, url)
     end,
+    filter_page = function(self, queued_url, status, body, headers)
+      if not (status == 200) then
+        return false, "non 200"
+      end
+      if not ((headers["content-type"] or ""):match("text")) then
+        return false, "non-text content type"
+      end
+      return true
+    end,
+    filter_url = function(self, url)
+      return true
+    end,
     run = function(self)
       while true do
         local _continue_0 = false
@@ -31,7 +43,7 @@ do
           local page, err = next_url:fetch()
           if not (page) then
             local colors = require("ansicolors")
-            print(colors("%{bright}%{red}Warning:%{reset} " .. tostring(err)))
+            print(colors("%{bright}%{yellow}Skipped:%{reset} " .. tostring(err)))
             _continue_0 = true
             break
           end
@@ -56,6 +68,10 @@ do
       end
       url_opts.url = clean_url(url_opts.url)
       url_opts.normalized_url = self:normalize_url(url_opts.url)
+      local save, reason = self:filter_url(url_opts.url)
+      if not (save) then
+        return nil, reason or "skipping filter_page"
+      end
       if not url_opts.force and self:has_url(url_opts.url) then
         return nil, "skipping URL already fetched"
       end
@@ -75,6 +91,7 @@ do
         "user_agent",
         "sleep",
         "filter_page",
+        "filter_url",
         "normalize_url"
       }
       for _index_0 = 1, #_list_0 do

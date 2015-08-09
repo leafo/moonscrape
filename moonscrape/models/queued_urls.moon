@@ -168,8 +168,8 @@ class QueuedUrls extends Model
 
     finish_log!
 
-    save_page = if @scraper.filter_page
-      @scraper\filter_page status, body, headers
+    save_page, filter_reason = if @scraper.filter_page
+      @scraper\filter_page @, status, body, headers
     else
       true
 
@@ -191,7 +191,7 @@ class QueuedUrls extends Model
       redirects: redirects[1] and db.array redirects
     }
 
-    page, "filtered page"
+    page, filter_reason or "filtered page"
 
   mark_failed: =>
     @update status: QueuedUrls.statuses.failed

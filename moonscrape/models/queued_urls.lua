@@ -95,11 +95,11 @@ do
         io.stdout:write(" (redirects: " .. tostring(#redirects) .. ")")
       end
       finish_log()
-      local save_page
+      local save_page, filter_reason
       if self.scraper.filter_page then
-        save_page = self.scraper:filter_page(status, body, headers)
+        save_page, filter_reason = self.scraper:filter_page(self, status, body, headers)
       else
-        save_page = true
+        save_page, filter_reason = true
       end
       local page
       if save_page then
@@ -120,7 +120,7 @@ do
         status = QueuedUrls.statuses:for_db(url_status),
         redirects = redirects[1] and db.array(redirects)
       })
-      return page, "filtered page"
+      return page, filter_reason or "filtered page"
     end,
     mark_failed = function(self)
       return self:update({
