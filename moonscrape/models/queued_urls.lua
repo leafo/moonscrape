@@ -28,8 +28,6 @@ do
     end,
     fetch = function(self)
       assert(self.status == self.__class.statuses.running, "invalid status for fetch")
-      local http = require("socket.http")
-      local ltn12 = require("ltn12")
       local Pages
       Pages = require("moonscrape.models").Pages
       local colors = require("ansicolors")
@@ -59,18 +57,7 @@ do
           finish_log()
           return nil, "too many redirects"
         end
-        local buffer = { }
-        local success
-        success, status, headers = http.request({
-          url = current_url,
-          sink = ltn12.sink.table(buffer),
-          redirect = false,
-          headers = {
-            ["User-Agent"] = self.scraper.user_agent
-          }
-        })
-        assert(success, status)
-        body = table.concat(buffer)
+        body, status, headers = self.scraper:request(current_url)
         if math.floor(status / 100) == 3 then
           local new_url = headers.location
           if not (new_url) then

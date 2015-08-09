@@ -94,9 +94,6 @@ class QueuedUrls extends Model
 
   fetch: =>
     assert @status == @@statuses.running, "invalid status for fetch"
-    http = require "socket.http"
-    ltn12 = require "ltn12"
-
     import Pages from require "moonscrape.models"
 
     colors = require "ansicolors"
@@ -128,19 +125,7 @@ class QueuedUrls extends Model
         finish_log!
         return nil, "too many redirects"
 
-      buffer = {}
-      success, status, headers = http.request {
-        url: current_url
-        sink: ltn12.sink.table buffer
-        redirect: false
-        headers: {
-          "User-Agent": @scraper.user_agent
-        }
-      }
-
-      assert success, status
-
-      body = table.concat buffer
+      body, status, headers = @scraper\request current_url
 
       if math.floor(status/100) == 3
         new_url = headers.location

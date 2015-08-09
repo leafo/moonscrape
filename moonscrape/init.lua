@@ -78,6 +78,21 @@ do
       url_opts.scraper = self
       local url = QueuedUrls:create(url_opts)
       self.callbacks[url.id] = callback
+    end,
+    request = function(self, url)
+      http = require("socket.http")
+      local ltn12 = require("ltn12")
+      local buffer = { }
+      local success, status, headers = http.request({
+        url = url,
+        sink = ltn12.sink.table(buffer),
+        redirect = false,
+        headers = {
+          ["User-Agent"] = self.user_agent
+        }
+      })
+      assert(success, status)
+      return table.concat(buffer), status, headers
     end
   }
   _base_0.__index = _base_0

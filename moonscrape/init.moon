@@ -69,6 +69,24 @@ class Scraper
 
     @callbacks[url.id] = callback
 
+  request: (url) =>
+    http = require "socket.http"
+    ltn12 = require "ltn12"
+
+    buffer = {}
+    success, status, headers = http.request {
+      :url
+      sink: ltn12.sink.table buffer
+      redirect: false
+      headers: {
+        "User-Agent": @user_agent
+      }
+    }
+
+    assert success, status
+    table.concat(buffer), status, headers
+
+
 default_scraper = Scraper!
 
 {
