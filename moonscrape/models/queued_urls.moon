@@ -102,7 +102,8 @@ class QueuedUrls extends Model
     import Pages from require "moonscrape.models"
 
     colors = require "ansicolors"
-    io.stdout\write colors "%{bright}%{cyan}Fetching:%{reset} #{@url}"
+    unless @scraper.silent
+      io.stdout\write colors "%{bright}%{cyan}Fetching:%{reset} #{@url}"
 
     redirects = {}
     redirects_set = {}
@@ -121,7 +122,8 @@ class QueuedUrls extends Model
         else
           "red"
 
-      print colors " [%{#{status_color}}#{status}%{reset}]"
+      unless @scraper.silent
+        print colors " [%{#{status_color}}#{status}%{reset}]"
 
     while true
       max_redirects -= 1
@@ -154,7 +156,8 @@ class QueuedUrls extends Model
         break
 
     if next redirects
-      io.stdout\write " (redirects: #{#redirects})"
+      unless @scraper.silent
+        io.stdout\write " (redirects: #{#redirects})"
 
     finish_log!
 

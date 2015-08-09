@@ -15,7 +15,7 @@ class Scraper
   new: (opts={}) =>
     for k in *{
       "project", "user_agent", "sleep", "filter_page", "filter_url",
-      "normalize_url", "default_handler"
+      "normalize_url", "default_handler", "silent"
     }
       @[k] = opts[k]
 
@@ -64,15 +64,18 @@ class Scraper
 
       unless page
         colors = require "ansicolors"
-        print colors "%{bright}%{yellow}Skipped:%{reset} #{err}"
+        unless @silent
+          print colors "%{bright}%{yellow}Skipped:%{reset} #{err}"
         continue
 
       if cb = @callbacks[next_url.id] or @default_handler
         cb @, next_url, page
 
     elapsed = socket.gettime! - start_time
-    run\finished finish_status
-    print "Processed #{count} urls in #{"%.2f"\format elapsed} seconds"
+    run\finish finish_status
+
+    unless @silent
+      print "Processed #{count} urls in #{"%.2f"\format elapsed} seconds"
 
   queue: (url_opts, callback) =>
     if type(url_opts) == "string"

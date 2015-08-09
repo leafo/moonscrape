@@ -31,7 +31,9 @@ do
       local Pages
       Pages = require("moonscrape.models").Pages
       local colors = require("ansicolors")
-      io.stdout:write(colors("%{bright}%{cyan}Fetching:%{reset} " .. tostring(self.url)))
+      if not (self.scraper.silent) then
+        io.stdout:write(colors("%{bright}%{cyan}Fetching:%{reset} " .. tostring(self.url)))
+      end
       local redirects = { }
       local redirects_set = { }
       local status, body, headers
@@ -48,7 +50,9 @@ do
         else
           status_color = "red"
         end
-        return print(colors(" [%{" .. tostring(status_color) .. "}" .. tostring(status) .. "%{reset}]"))
+        if not (self.scraper.silent) then
+          return print(colors(" [%{" .. tostring(status_color) .. "}" .. tostring(status) .. "%{reset}]"))
+        end
       end
       while true do
         max_redirects = max_redirects - 1
@@ -79,7 +83,9 @@ do
         end
       end
       if next(redirects) then
-        io.stdout:write(" (redirects: " .. tostring(#redirects) .. ")")
+        if not (self.scraper.silent) then
+          io.stdout:write(" (redirects: " .. tostring(#redirects) .. ")")
+        end
       end
       finish_log()
       local save_page, filter_reason

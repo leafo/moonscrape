@@ -64,7 +64,9 @@ do
           local page, err = next_url:fetch()
           if not (page) then
             local colors = require("ansicolors")
-            print(colors("%{bright}%{yellow}Skipped:%{reset} " .. tostring(err)))
+            if not (self.silent) then
+              print(colors("%{bright}%{yellow}Skipped:%{reset} " .. tostring(err)))
+            end
             _continue_0 = true
             break
           end
@@ -81,8 +83,10 @@ do
         end
       end
       local elapsed = socket.gettime() - start_time
-      run:finished(finish_status)
-      return print("Processed " .. tostring(count) .. " urls in " .. tostring(("%.2f"):format(elapsed)) .. " seconds")
+      run:finish(finish_status)
+      if not (self.silent) then
+        return print("Processed " .. tostring(count) .. " urls in " .. tostring(("%.2f"):format(elapsed)) .. " seconds")
+      end
     end,
     queue = function(self, url_opts, callback)
       if type(url_opts) == "string" then
@@ -148,7 +152,8 @@ do
         "filter_page",
         "filter_url",
         "normalize_url",
-        "default_handler"
+        "default_handler",
+        "silent"
       }
       for _index_0 = 1, #_list_0 do
         local k = _list_0[_index_0]
