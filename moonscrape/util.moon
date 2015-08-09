@@ -56,4 +56,11 @@ normalize_url = (url) ->
 
   "#{host}#{port}#{path}#{query}"
 
-{ :is_relative_url, :clean_url, :normalize_url, :decode_html_entities }
+
+_random = math.random
+random_normal = (std=1)->
+  rand = (_random! + _random! + _random! + _random! + _random! + _random! + _random! + _random! + _random! + _random! + _random! + _random!) / 12
+  rand = (rand - 0.5) * 2
+  rand * std
+
+{ :is_relative_url, :clean_url, :normalize_url, :decode_html_entities, :random_normal }

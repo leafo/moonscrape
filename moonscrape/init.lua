@@ -1,8 +1,10 @@
+local socket = require("socket")
 local http = require("socket.http")
-local clean_url, normalize_url
+math.randomseed(os.time())
+local clean_url, normalize_url, random_normal
 do
   local _obj_0 = require("moonscrape.util")
-  clean_url, normalize_url = _obj_0.clean_url, _obj_0.normalize_url
+  clean_url, normalize_url, random_normal = _obj_0.clean_url, _obj_0.normalize_url, _obj_0.random_normal
 end
 local QueuedUrls, Pages
 do
@@ -13,6 +15,7 @@ local Scraper
 do
   local _base_0 = {
     project = nil,
+    sleep = nil,
     user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405",
     normalize_url = function(self, url)
       return normalize_url(url)
@@ -82,6 +85,18 @@ do
     request = function(self, url)
       http = require("socket.http")
       local ltn12 = require("ltn12")
+      do
+        local seconds = self.sleep
+        if seconds then
+          if type(seconds) == "table" then
+            local target, spread
+            target, spread = seconds[1], seconds[2]
+            seconds = target + math.abs(random_normal(spread))
+            print("Sleep for " .. tostring(seconds))
+          end
+          socket.sleep(seconds)
+        end
+      end
       local buffer = { }
       local success, status, headers = http.request({
         url = url,

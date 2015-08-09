@@ -1,11 +1,15 @@
-
+socket = require "socket"
 http = require "socket.http"
-import clean_url, normalize_url from require "moonscrape.util"
 
+math.randomseed os.time!
+
+import clean_url, normalize_url, random_normal from require "moonscrape.util"
 import QueuedUrls, Pages from require "moonscrape.models"
 
 class Scraper
   project: nil
+  sleep: nil
+
   user_agent: "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405"
 
   new: (opts={}) =>
@@ -73,6 +77,14 @@ class Scraper
     http = require "socket.http"
     ltn12 = require "ltn12"
 
+    if seconds = @sleep
+      if type(seconds) == "table"
+        {target, spread} = seconds
+        seconds = target + math.abs random_normal spread
+        print "Sleep for #{seconds}"
+
+      socket.sleep seconds
+
     buffer = {}
     success, status, headers = http.request {
       :url
@@ -85,7 +97,6 @@ class Scraper
 
     assert success, status
     table.concat(buffer), status, headers
-
 
 default_scraper = Scraper!
 

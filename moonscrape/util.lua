@@ -83,9 +83,20 @@ normalize_url = function(url)
   end
   return tostring(host) .. tostring(port) .. tostring(path) .. tostring(query)
 end
+local _random = math.random
+local random_normal
+random_normal = function(std)
+  if std == nil then
+    std = 1
+  end
+  local rand = (_random() + _random() + _random() + _random() + _random() + _random() + _random() + _random() + _random() + _random() + _random() + _random()) / 12
+  rand = (rand - 0.5) * 2
+  return rand * std
+end
 return {
   is_relative_url = is_relative_url,
   clean_url = clean_url,
   normalize_url = normalize_url,
-  decode_html_entities = decode_html_entities
+  decode_html_entities = decode_html_entities,
+  random_normal = random_normal
 }
