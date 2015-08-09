@@ -4,10 +4,10 @@ do
   local _obj_0 = require("lapis.db.model")
   Model, enum = _obj_0.Model, _obj_0.enum
 end
-local is_relative_url, normalize_url
+local is_relative_url, clean_url
 do
   local _obj_0 = require("moonscrape.util")
-  is_relative_url, normalize_url = _obj_0.is_relative_url, _obj_0.normalize_url
+  is_relative_url, clean_url = _obj_0.is_relative_url, _obj_0.clean_url
 end
 local QueuedUrls
 do
@@ -60,12 +60,16 @@ do
           return nil, "too many redirects"
         end
         local buffer = { }
-        local _
-        _, status, headers = http.request({
+        local success
+        success, status, headers = http.request({
           url = current_url,
           sink = ltn12.sink.table(buffer),
-          redirect = false
+          redirect = false,
+          headers = {
+            ["User-Agent"] = self.scraper.user_agent
+          }
         })
+        assert(success, status)
         body = table.concat(buffer)
         if math.floor(status / 100) == 3 then
           local new_url = headers.location
@@ -74,7 +78,7 @@ do
             finish_log()
             return nil, "missing location"
           end
-          new_url = normalize_url(new_url)
+          new_url = clean_url(new_url)
           if redirects_set[new_url] then
             self:mark_failed()
             finish_log()
@@ -91,12 +95,21 @@ do
         io.stdout:write(" (redirects: " .. tostring(#redirects) .. ")")
       end
       finish_log()
-      local page = Pages:create({
-        body = body,
-        status = status,
-        content_type = headers["content-type"],
-        queued_url_id = self.id
-      })
+      local save_page
+      if self.scraper.filter_page then
+        save_page = self.scraper:filter_page(status, body, headers)
+      else
+        save_page = true
+      end
+      local page
+      if save_page then
+        page = Pages:create({
+          body = body,
+          status = status,
+          content_type = headers["content-type"],
+          queued_url_id = self.id
+        })
+      end
       local url_status
       if (tostring(status)):match("^5") then
         url_status = "failed"
@@ -107,7 +120,7 @@ do
         status = QueuedUrls.statuses:for_db(url_status),
         redirects = redirects[1] and db.array(redirects)
       })
-      return page
+      return page, "filtered page"
     end,
     mark_failed = function(self)
       return self:update({

@@ -2,7 +2,7 @@
 db = require "lapis.db"
 import Model, enum from require "lapis.db.model"
 
-import is_relative_url, normalize_url from require "moonscrape.util"
+import is_relative_url, clean_url from require "moonscrape.util"
 
 class QueuedUrls extends Model
   @timestamp: true
@@ -126,7 +126,7 @@ class QueuedUrls extends Model
         return nil, "too many redirects"
 
       buffer = {}
-      _, status, headers = http.request {
+      success, status, headers = http.request {
         url: current_url
         sink: ltn12.sink.table buffer
         redirect: false
@@ -134,6 +134,9 @@ class QueuedUrls extends Model
           "User-Agent": @scraper.user_agent
         }
       }
+
+      assert success, status
+
       body = table.concat buffer
 
       if math.floor(status/100) == 3
@@ -144,7 +147,7 @@ class QueuedUrls extends Model
           finish_log!
           return nil, "missing location"
 
-        new_url = normalize_url new_url
+        new_url = clean_url new_url
 
         if redirects_set[new_url]
           @mark_failed!
@@ -162,12 +165,18 @@ class QueuedUrls extends Model
 
     finish_log!
 
-    page = Pages\create {
-      :body
-      :status
-      content_type: headers["content-type"]
-      queued_url_id: @id
-    }
+    save_page = if @scraper.filter_page
+      @scraper\filter_page status, body, headers
+    else
+      true
+
+    page = if save_page
+      Pages\create {
+        :body
+        :status
+        content_type: headers["content-type"]
+        queued_url_id: @id
+      }
 
     url_status = if "#{status}"\match "^5"
       "failed"
@@ -179,7 +188,7 @@ class QueuedUrls extends Model
       redirects: redirects[1] and db.array redirects
     }
 
-    page
+    page, "filtered page"
 
   mark_failed: =>
     @update status: QueuedUrls.statuses.failed

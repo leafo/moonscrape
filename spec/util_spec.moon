@@ -25,8 +25,8 @@ describe "moonscrape.util", ->
       it "#{url} is #{expected}", ->
         assert.same expected, is_relative_url url
 
-  describe "normalize_url", ->
-    import normalize_url from require "moonscrape.util"
+  describe "clean_url", ->
+    import clean_url from require "moonscrape.util"
 
     for {url, expected} in *{
       {"http://leafo.net", "http://leafo.net"}
@@ -36,8 +36,8 @@ describe "moonscrape.util", ->
       {"http://leafo.net/hello", "http://leafo.net/hello"}
       {"http://leafo.net/hello/", "http://leafo.net/hello/"}
     }
-      it "normalize_url(#{url}) should be #{expected}", ->
-        assert.same expected, normalize_url url
+      it "clean_url(#{url}) should be #{expected}", ->
+        assert.same expected, clean_url url
 
   describe "decode_html_entities" ,->
     import decode_html_entities from require "moonscrape.util"

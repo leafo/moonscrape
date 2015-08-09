@@ -11,8 +11,8 @@ is_relative_url = function(url)
   end
   return true
 end
-local normalize_url
-normalize_url = function(url)
+local clean_url
+clean_url = function(url)
   url = url:gsub("#.*$", ""):gsub("(//[^/]+)/$", "%1")
   return url
 end
@@ -53,6 +53,6 @@ do
 end
 return {
   is_relative_url = is_relative_url,
-  normalize_url = normalize_url,
+  clean_url = clean_url,
   decode_html_entities = decode_html_entities
 }

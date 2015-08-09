@@ -1,6 +1,6 @@
 
 http = require "socket.http"
-import normalize_url from require "moonscrape.util"
+import clean_url from require "moonscrape.util"
 
 import QueuedUrls, Pages from require "moonscrape.models"
 
@@ -26,7 +26,7 @@ class Scraper
 
       unless page
         colors = require "ansicolors"
-        print\write colors "%{bright}%{red}Warning:%{reset} #{err}"
+        print colors "%{bright}%{red}Warning:%{reset} #{err}"
         continue
 
       if cb = @callbacks[next_url.id]
@@ -36,7 +36,7 @@ class Scraper
     if type(url_opts) == "string"
       url_opts = { url: url_opts }
 
-    url_opts.url = normalize_url url_opts.url
+    url_opts.url = clean_url url_opts.url
 
     if not url_opts.force and @has_url url_opts.url
       return nil, "skipping URL already fetched"

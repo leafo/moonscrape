@@ -1,6 +1,6 @@
 local http = require("socket.http")
-local normalize_url
-normalize_url = require("moonscrape.util").normalize_url
+local clean_url
+clean_url = require("moonscrape.util").clean_url
 local QueuedUrls, Pages
 do
   local _obj_0 = require("moonscrape.models")
@@ -25,7 +25,7 @@ do
           local page, err = next_url:fetch()
           if not (page) then
             local colors = require("ansicolors")
-            print:write(colors("%{bright}%{red}Warning:%{reset} " .. tostring(err)))
+            print(colors("%{bright}%{red}Warning:%{reset} " .. tostring(err)))
             _continue_0 = true
             break
           end
@@ -48,7 +48,7 @@ do
           url = url_opts
         }
       end
-      url_opts.url = normalize_url(url_opts.url)
+      url_opts.url = clean_url(url_opts.url)
       if not url_opts.force and self:has_url(url_opts.url) then
         return nil, "skipping URL already fetched"
       end

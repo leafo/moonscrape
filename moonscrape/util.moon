@@ -6,7 +6,7 @@ is_relative_url = (url) ->
 
   true
 
-normalize_url = (url) ->
+clean_url = (url) ->
   url = url\gsub("#.*$", "")\gsub "(//[^/]+)/$", "%1"
   url
 
@@ -25,4 +25,4 @@ decode_html_entities = do
       else
         '&'..tag..';')
 
-{ :is_relative_url, :normalize_url, :decode_html_entities }
+{ :is_relative_url, :clean_url, :decode_html_entities }
