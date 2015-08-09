@@ -7,6 +7,7 @@ import query_all from require "web_sanitize.query"
 leafonet = ->
   scraper = Scraper {
     project: "leafo.net"
+    sleep: {0.2, 5.0}
   }
 
   handle_result = (url, page) =>
@@ -29,8 +30,8 @@ leafonet = ->
         url\queue { :tags, url: href }, handle_result
 
 
-  -- scraper\queue "http://leafo.net", handle_result
-  scraper\queue "http://localhost/blog2/www/", handle_result
+  scraper\queue "http://leafo.net/lapis", handle_result
+  -- scraper\queue "http://localhost/blog2/www/", handle_result
   scraper\run!
 
 
@@ -53,8 +54,8 @@ moonrocks = ->
       if href and is_relative_url href
         url\queue href, handle_result
 
-  scraper\queue "http://localhost:8080", handle_result
+  scraper\queue "https://luarocks.org", handle_result
   scraper\run!
 
--- leafonet!
-moonrocks!
+leafonet!
+-- moonrocks!
