@@ -26,4 +26,3 @@ lint:
 	tup
 	moonc -l $$(find moonscrape | grep moon$$)
 	moonc -l $$(find spec | grep moon$$)
-	moonc -l $$(find models | grep moon$$)
