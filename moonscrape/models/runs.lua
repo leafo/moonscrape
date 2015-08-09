@@ -8,7 +8,7 @@ local Runs
 do
   local _parent_0 = Model
   local _base_0 = {
-    check = function(self)
+    check_message = function(self)
       self:refresh("message")
       do
         local m = self.message
@@ -20,8 +20,12 @@ do
         end
       end
     end,
-    finish = function(self)
+    finish = function(self, status)
+      if status == nil then
+        status = "finished"
+      end
       return self:update({
+        status = self.__class.statuses:for_db(status),
         finished_at = db.raw("NOW()")
       })
     end,

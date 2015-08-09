@@ -6,10 +6,10 @@ do
   local _obj_0 = require("moonscrape.util")
   clean_url, normalize_url, random_normal = _obj_0.clean_url, _obj_0.normalize_url, _obj_0.random_normal
 end
-local QueuedUrls, Pages
+local QueuedUrls, Runs
 do
   local _obj_0 = require("moonscrape.models")
-  QueuedUrls, Pages = _obj_0.QueuedUrls, _obj_0.Pages
+  QueuedUrls, Runs = _obj_0.QueuedUrls, _obj_0.Runs
 end
 local Scraper
 do
@@ -39,16 +39,28 @@ do
       return true
     end,
     run = function(self)
+      local run = Runs:create({
+        project = self.project
+      })
       local start_time = socket.gettime()
       local count = 0
+      local finish_status
       while true do
         local _continue_0 = false
         repeat
+          do
+            local msg = run:check_message()
+            if msg then
+              finish_status = "canceled"
+              break
+            end
+          end
           local next_url = QueuedUrls:get_next(self)
           if not (next_url) then
             break
           end
           count = count + 1
+          run:increment()
           local page, err = next_url:fetch()
           if not (page) then
             local colors = require("ansicolors")
@@ -69,6 +81,7 @@ do
         end
       end
       local elapsed = socket.gettime() - start_time
+      run:finished(finish_status)
       return print("Processed " .. tostring(count) .. " urls in " .. tostring(("%.2f"):format(elapsed)) .. " seconds")
     end,
     queue = function(self, url_opts, callback)

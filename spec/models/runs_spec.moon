@@ -18,12 +18,12 @@ describe "models.runs", ->
     assert r
     assert.same r.project, "leafo.net"
 
-    assert.nil r\check!
+    assert.nil r\check_message!
 
     r\update message: "hello world!"
 
-    assert.same "hello world!", r\check!
-    assert.nil r\check!
+    assert.same "hello world!", r\check_message!
+    assert.nil r\check_message!
 
     r\increment!
     r\increment!

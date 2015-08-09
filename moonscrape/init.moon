@@ -4,7 +4,7 @@ http = require "socket.http"
 math.randomseed os.time!
 
 import clean_url, normalize_url, random_normal from require "moonscrape.util"
-import QueuedUrls, Pages from require "moonscrape.models"
+import QueuedUrls, Runs from require "moonscrape.models"
 
 class Scraper
   project: nil
@@ -43,13 +43,22 @@ class Scraper
   filter_url: (url) => true
 
   run: =>
+    run = Runs\create project: @project
+
     start_time = socket.gettime!
     count = 0
 
+    local finish_status
+
     while true
+      if msg = run\check_message!
+        finish_status = "canceled"
+        break
+
       next_url = QueuedUrls\get_next @
       break unless next_url
       count += 1
+      run\increment!
 
       page, err = next_url\fetch!
 
@@ -62,6 +71,7 @@ class Scraper
         cb @, next_url, page
 
     elapsed = socket.gettime! - start_time
+    run\finished finish_status
     print "Processed #{count} urls in #{"%.2f"\format elapsed} seconds"
 
   queue: (url_opts, callback) =>

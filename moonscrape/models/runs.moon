@@ -16,14 +16,17 @@ class Runs extends Model
     opts.status or= @statuses\for_db opts.status or "running"
     Model.create @, opts
 
-  check: =>
+  check_message: =>
     @refresh "message"
     if m = @message
       @update message: db.NULL
       return m
 
-  finish: =>
-    @update finished_at: db.raw "NOW()"
+  finish: (status="finished") =>
+    @update {
+      status: @@statuses\for_db status
+      finished_at: db.raw "NOW()"
+    }
 
   increment: =>
     @update {
