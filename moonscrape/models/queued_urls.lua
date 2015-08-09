@@ -269,7 +269,7 @@ do
     })
     local res = db.update(self:table_name(), {
       status = self.statuses.running
-    }, "\n      id in (\n        select id from " .. tostring(db.escape_identifier(self:table_name())) .. "\n        where " .. tostring(clause) .. "\n        order by depth asc limit 1 for update\n      ) returning *\n    ")
+    }, "\n      id in (\n        select id from " .. tostring(db.escape_identifier(self:table_name())) .. "\n        where " .. tostring(clause) .. "\n        order by priority desc, depth asc limit 1 for update\n      ) returning *\n    ")
     res = unpack(res)
     if res then
       do

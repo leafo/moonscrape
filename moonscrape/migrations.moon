@@ -18,6 +18,8 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
       {"url", text}
       {"normalized_url", text null: true}
       {"depth", integer}
+      {"priority", integer default: 0}
+
       {"parent_queued_url_id", foreign_key null: true}
 
       {"status", enum}
@@ -64,4 +66,5 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
 
       {"processed_count", integer}
     }
+
 }

@@ -36,6 +36,12 @@ return {
         integer
       },
       {
+        "priority",
+        integer({
+          default = 0
+        })
+      },
+      {
         "parent_queued_url_id",
         foreign_key({
           null = true

@@ -71,7 +71,7 @@ class QueuedUrls extends Model
       id in (
         select id from #{db.escape_identifier @table_name!}
         where #{clause}
-        order by depth asc limit 1 for update
+        order by priority desc, depth asc limit 1 for update
       ) returning *
     "
 

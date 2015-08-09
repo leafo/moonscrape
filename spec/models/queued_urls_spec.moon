@@ -12,22 +12,49 @@ describe "moonscrape.models.queued_urls", ->
   before_each ->
     truncate_tables QueuedUrls
 
-  it "it gets next queued url", ->
-    scraper = Scraper!
+  describe "get_next", ->
+    local scraper
 
-    QueuedUrls\create {
-      url: "http://leafo.net"
-      :scraper
-    }
+    before_each ->
+      scraper = Scraper!
 
-    QueuedUrls\create {
-      url: "http://leafo.net/stuff"
-      depth: 1
-      :scraper
-    }
+    it "gets next queued url", ->
+      QueuedUrls\create {
+        url: "http://leafo.net"
+        :scraper
+      }
 
-    url = QueuedUrls\get_next scraper
-    assert.same url.url, "http://leafo.net"
+      QueuedUrls\create {
+        url: "http://leafo.net/stuff"
+        depth: 1
+        :scraper
+      }
+
+      url = QueuedUrls\get_next scraper
+      assert.same url.url, "http://leafo.net"
+
+    it "gets next queued url with priority", ->
+      QueuedUrls\create {
+        url: "http://leafo.net/a"
+        :scraper
+      }
+
+      b = QueuedUrls\create {
+        url: "http://leafo.net/b"
+        depth: 1
+        priority: 1
+        :scraper
+      }
+
+      QueuedUrls\create {
+        url: "http://leafo.net/c"
+        depth: 1
+        priority: 0
+        :scraper
+      }
+
+      url = QueuedUrls\get_next scraper
+      assert.same b.id, url.id
 
   describe "has_url", ->
     for scraper_fn in *{(-> Scraper(project: "cool")), Scraper}
