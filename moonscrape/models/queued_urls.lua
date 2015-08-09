@@ -229,15 +229,19 @@ do
     }
   }
   self.has_url = function(self, scraper, url)
+    local normalized = scraper:normalize_url(url)
     local url_match = db.encode_clause({
       url = url
+    })
+    local normalized_match = db.encode_clause({
+      normalized_url = normalized
     })
     local redirect_match = db.interpolate_query("(redirects is not null and ? <@ redirects)", db.array({
       url
     }))
     return not not QueuedUrls:find({
       project = scraper.project or db.NULL,
-      [db.TRUE] = db.raw("(" .. tostring(url_match) .. " OR " .. tostring(redirect_match) .. ")")
+      [db.TRUE] = db.raw("(" .. tostring(url_match) .. " OR " .. tostring(normalized_match) .. " OR " .. tostring(redirect_match) .. ")")
     })
   end
   self.create = function(self, opts)

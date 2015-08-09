@@ -55,6 +55,18 @@ describe "moonscrape.models.queued_urls", ->
         assert.true QueuedUrls\has_url scraper, "http://leafo.net/yeah"
         assert.false QueuedUrls\has_url scraper, "http://leafo.net/okay"
 
+      it "detects normalize_url url", ->
+        url = "http://leafo.net:80?hello=world&a=b"
+
+        QueuedUrls\create {
+          url: url
+          normalized_url: scraper\normalize_url url
+          :scraper
+        }
+
+        assert.true QueuedUrls\has_url scraper, "http://leafo.net/?a=b&hello=world"
+        assert.false QueuedUrls\has_url scraper, "http://leafo.net/?a=c&hello=world"
+
   describe "join", ->
     u = (url) -> QueuedUrls\load(:url)
 

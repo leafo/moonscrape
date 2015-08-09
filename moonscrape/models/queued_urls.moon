@@ -22,12 +22,15 @@ class QueuedUrls extends Model
   }
 
   @has_url: (scraper, url) =>
+    normalized = scraper\normalize_url url
+
     url_match = db.encode_clause :url
+    normalized_match = db.encode_clause normalized_url: normalized
     redirect_match = db.interpolate_query "(redirects is not null and ? <@ redirects)", db.array({url})
 
     not not QueuedUrls\find {
       project: scraper.project or db.NULL
-      [db.TRUE]: db.raw "(#{url_match} OR #{redirect_match})"
+      [db.TRUE]: db.raw "(#{url_match} OR #{normalized_match} OR #{redirect_match})"
     }
 
   @create: (opts) =>
