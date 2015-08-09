@@ -78,7 +78,7 @@ return {
       method = "GIN",
       where = "redirects is not null"
     })
-    return create_table("pages", {
+    create_table("pages", {
       {
         "id",
         serial
@@ -108,6 +108,50 @@ return {
       {
         "queued_url_id",
         foreign_key
+      }
+    })
+    return create_table("runs", {
+      {
+        "id",
+        serial
+      },
+      {
+        "project",
+        text({
+          null = true
+        })
+      },
+      {
+        "created_at",
+        time
+      },
+      {
+        "updated_at",
+        time
+      },
+      {
+        "status",
+        integer
+      },
+      {
+        "started_at",
+        time
+      },
+      {
+        "finished_at",
+        time({
+          null = true
+        })
+      },
+      {
+        "message",
+        text({
+          null = true
+        })
+      },
+      {
+        "processed_count",
+        integer
       }
     })
   end

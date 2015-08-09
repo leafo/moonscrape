@@ -49,4 +49,19 @@ import add_column, create_index, drop_index, drop_column, create_table from sche
       {"queued_url_id", foreign_key}
     }
 
+    create_table "runs", {
+      {"id", serial}
+
+      {"project", text null: true}
+      {"created_at", time}
+      {"updated_at", time}
+      {"status", integer}
+
+      {"started_at", time}
+      {"finished_at", time null: true}
+
+      {"message", text null: true}
+
+      {"processed_count", integer}
+    }
 }
