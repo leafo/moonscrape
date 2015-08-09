@@ -56,6 +56,7 @@ describe "moonscrape.util", ->
       {"http://leafo.net/#yeah", "leafo.net"}
       {"http://leafo.net/?hello=world", "leafo.net?hello=world"}
       {"http://leafo.net/one/two?hello=world&a=b", "leafo.net/one/two?a=b&hello=world"}
+      {"http://leafo.net:80?hello=world&a=b", "leafo.net?a=b&hello=world"}
     }
       it "normalize_url(#{url}) should be #{expected}", ->
         assert.same expected, normalize_url url

@@ -70,7 +70,8 @@ normalize_url = function(url)
     query = ""
   end
   local host, path = url:match("//([^/#?]*)(/?[^#?]*)")
-  local port = host:match(":(%d+)$")
+  local portless_host, port = host:match("^(.-):(%d+)$")
+  host = portless_host or host
   port = port or "80"
   if port == "80" then
     port = ""

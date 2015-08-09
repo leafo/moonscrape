@@ -42,7 +42,9 @@ normalize_url = (url) ->
     ""
 
   host, path = url\match "//([^/#?]*)(/?[^#?]*)"
-  port = host\match ":(%d+)$"
+  portless_host, port = host\match "^(.-):(%d+)$"
+  host = portless_host or host
+
   port or= "80"
   port = if port == "80"
     ""
