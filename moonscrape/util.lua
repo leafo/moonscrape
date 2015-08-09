@@ -70,6 +70,9 @@ normalize_url = function(url)
     query = ""
   end
   local host, path = url:match("//([^/#?]*)(/?[^#?]*)")
+  if not (host) then
+    return nil, "invalid url"
+  end
   local portless_host, port = host:match("^(.-):(%d+)$")
   host = portless_host or host
   port = port or "80"

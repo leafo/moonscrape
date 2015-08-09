@@ -42,6 +42,9 @@ normalize_url = (url) ->
     ""
 
   host, path = url\match "//([^/#?]*)(/?[^#?]*)"
+  unless host
+    return nil, "invalid url"
+
   portless_host, port = host\match "^(.-):(%d+)$"
   host = portless_host or host
 

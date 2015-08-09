@@ -15,11 +15,14 @@ class Scraper
   new: (opts={}) =>
     for k in *{
       "project", "user_agent", "sleep", "filter_page", "filter_url",
-      "normalize_url"
+      "normalize_url", "default_handler"
     }
       @[k] = opts[k]
 
     @callbacks = {}
+
+  reset: =>
+    QueuedUrls\reset @project
 
   normalize_url: (url) =>
     normalize_url url
@@ -55,7 +58,7 @@ class Scraper
         print colors "%{bright}%{yellow}Skipped:%{reset} #{err}"
         continue
 
-      if cb = @callbacks[next_url.id]
+      if cb = @callbacks[next_url.id] or @default_handler
         cb @, next_url, page
 
     elapsed = socket.gettime! - start_time
@@ -79,6 +82,7 @@ class Scraper
     url = QueuedUrls\create url_opts
 
     @callbacks[url.id] = callback
+    true
 
   request: (url) =>
     http = if url\match "^https:"

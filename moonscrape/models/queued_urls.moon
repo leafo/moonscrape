@@ -33,6 +33,11 @@ class QueuedUrls extends Model
       [db.TRUE]: db.raw "(#{url_match} OR #{normalized_match} OR #{redirect_match})"
     }
 
+  @reset: (project) =>
+    db.delete @table_name!, {
+      project: project or db.NULL
+    }
+
   @create: (opts) =>
     assert opts.url, "missing URL"
 

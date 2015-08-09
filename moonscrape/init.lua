@@ -17,6 +17,9 @@ do
     project = nil,
     sleep = nil,
     user_agent = "Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405",
+    reset = function(self)
+      return QueuedUrls:reset(self.project)
+    end,
     normalize_url = function(self, url)
       return normalize_url(url)
     end,
@@ -54,7 +57,7 @@ do
             break
           end
           do
-            local cb = self.callbacks[next_url.id]
+            local cb = self.callbacks[next_url.id] or self.default_handler
             if cb then
               cb(self, next_url, page)
             end
@@ -86,6 +89,7 @@ do
       url_opts.scraper = self
       local url = QueuedUrls:create(url_opts)
       self.callbacks[url.id] = callback
+      return true
     end,
     request = function(self, url)
       if url:match("^https:") then
@@ -130,7 +134,8 @@ do
         "sleep",
         "filter_page",
         "filter_url",
-        "normalize_url"
+        "normalize_url",
+        "default_handler"
       }
       for _index_0 = 1, #_list_0 do
         local k = _list_0[_index_0]

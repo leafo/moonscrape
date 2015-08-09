@@ -231,6 +231,11 @@ do
       [db.TRUE] = db.raw("(" .. tostring(url_match) .. " OR " .. tostring(normalized_match) .. " OR " .. tostring(redirect_match) .. ")")
     })
   end
+  self.reset = function(self, project)
+    return db.delete(self:table_name(), {
+      project = project or db.NULL
+    })
+  end
   self.create = function(self, opts)
     assert(opts.url, "missing URL")
     if is_relative_url(opts.url) then
