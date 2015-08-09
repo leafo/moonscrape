@@ -1,8 +1,19 @@
 
-.PHONY: init_db test_db lint build
+.PHONY: init_db test_db lint build null migrate backup
 
-init_db:
-	make build
+null:
+	echo "Choose a task init_db, local, build, test_db, backup"
+
+backup:
+	mkdir -p backup
+	pg_dump -F c -U postgres moonscrape > backup/$$(date +%F_%H-%M-%S)_$$(luajit -e 'print(require("lapis.db").query("select max(name) from lapis_migrations")[1].max)').dump
+
+migrate: build
+	tup
+	lapis migrate
+	make test_db > /dev/null
+
+init_db: build
 	tup
 	-dropdb -U postgres moonscrape
 	createdb -U postgres moonscrape
