@@ -40,9 +40,13 @@ class Scraper
   filter_url: (url) => true
 
   run: =>
+    start_time = socket.gettime!
+    count = 0
+
     while true
       next_url = QueuedUrls\get_next @
-      return unless next_url
+      break unless next_url
+      count += 1
 
       page, err = next_url\fetch!
 
@@ -53,6 +57,9 @@ class Scraper
 
       if cb = @callbacks[next_url.id]
         cb @, next_url, page
+
+    elapsed = socket.gettime! - start_time
+    print "Processed #{count} urls in #{"%.2f"\format elapsed} seconds"
 
   queue: (url_opts, callback) =>
     if type(url_opts) == "string"
@@ -85,7 +92,6 @@ class Scraper
       if type(seconds) == "table"
         {target, spread} = seconds
         seconds = target + math.abs random_normal spread
-        print "Sleep for #{seconds}"
 
       socket.sleep seconds
 

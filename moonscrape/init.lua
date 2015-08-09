@@ -36,13 +36,16 @@ do
       return true
     end,
     run = function(self)
+      local start_time = socket.gettime()
+      local count = 0
       while true do
         local _continue_0 = false
         repeat
           local next_url = QueuedUrls:get_next(self)
           if not (next_url) then
-            return 
+            break
           end
+          count = count + 1
           local page, err = next_url:fetch()
           if not (page) then
             local colors = require("ansicolors")
@@ -62,6 +65,8 @@ do
           break
         end
       end
+      local elapsed = socket.gettime() - start_time
+      return print("Processed " .. tostring(count) .. " urls in " .. tostring(("%.2f"):format(elapsed)) .. " seconds")
     end,
     queue = function(self, url_opts, callback)
       if type(url_opts) == "string" then
@@ -96,7 +101,6 @@ do
             local target, spread
             target, spread = seconds[1], seconds[2]
             seconds = target + math.abs(random_normal(spread))
-            print("Sleep for " .. tostring(seconds))
           end
           socket.sleep(seconds)
         end
