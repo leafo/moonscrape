@@ -32,7 +32,7 @@ normalize_url = (url) ->
 
   query = if query
     flat_query = {}
-    for _,{k,v} in ipairs parse_query_string(query)
+    for _,{k,v} in ipairs parse_query_string(query) or {}
       table.insert flat_query, "#{k}=#{v}"
 
     table.sort flat_query

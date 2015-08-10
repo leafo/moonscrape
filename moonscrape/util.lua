@@ -58,7 +58,7 @@ normalize_url = function(url)
   local query = url:match(".-%?(.*)")
   if query then
     local flat_query = { }
-    for _, _des_0 in ipairs(parse_query_string(query)) do
+    for _, _des_0 in ipairs(parse_query_string(query) or { }) do
       local k, v
       k, v = _des_0[1], _des_0[2]
       table.insert(flat_query, tostring(k) .. "=" .. tostring(v))
