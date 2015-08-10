@@ -4,7 +4,7 @@ http = require "socket.http"
 math.randomseed os.time!
 
 import clean_url, normalize_url, random_normal from require "moonscrape.util"
-import QueuedUrls, Runs from require "moonscrape.models"
+import QueuedUrls, Pages, Runs from require "moonscrape.models"
 
 class Scraper
   project: nil
@@ -59,6 +59,9 @@ class Scraper
       priority = @url_priority url.url
       if priority != url.priority
         url\update(:priority)
+        count += 1
+
+    count
 
   refilter_queued: =>
     count = 0
@@ -77,9 +80,36 @@ class Scraper
       )
     ", QueuedUrls.statuses.failed
 
-    db.update QueuedUrls\table_name!, {
+    res = db.update QueuedUrls\table_name!, {
       status: QueuedUrls.statuses.queued
     }, "#{@_url_clause!} and status = ?", QueuedUrls.statuses.failed
+
+    res.affected_rows
+
+  rescan_complete: =>
+    count = ->
+      QueuedUrls\count "#{@_url_clause!} and status = ?", QueuedUrls.statuses.queued
+
+    before_count = count!
+
+    pager = QueuedUrls\paginated "
+      where #{@_url_clause!} and status = ?
+      and url like '%/stats'
+
+    ", QueuedUrls.statuses.complete, {
+        per_page: 200
+        prepare_results: (urls) ->
+          Pages\include_in urls, "queued_url_id", flip: true
+          urls
+      }
+
+    for group in pager\each_page!
+      for url in *group
+        continue unless url.page
+        url.scraper = @
+        @default_handler url, url.page
+
+    count! - before_count
 
   run: =>
     run = Runs\create project: @project
@@ -125,7 +155,7 @@ class Scraper
 
     save, reason = @filter_url url_opts.url
     unless save
-      return nil, reason or "skipping filter_page"
+      return nil, reason or "skipping from filter_url"
 
     if not url_opts.force and @has_url url_opts.url
       return nil, "skipping URL already fetched"

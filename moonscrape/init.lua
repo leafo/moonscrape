@@ -6,10 +6,10 @@ do
   local _obj_0 = require("moonscrape.util")
   clean_url, normalize_url, random_normal = _obj_0.clean_url, _obj_0.normalize_url, _obj_0.random_normal
 end
-local QueuedUrls, Runs
+local QueuedUrls, Pages, Runs
 do
   local _obj_0 = require("moonscrape.models")
-  QueuedUrls, Runs = _obj_0.QueuedUrls, _obj_0.Runs
+  QueuedUrls, Pages, Runs = _obj_0.QueuedUrls, _obj_0.Pages, _obj_0.Runs
 end
 local Scraper
 do
@@ -60,8 +60,10 @@ do
           url:update({
             priority = priority
           })
+          count = count + 1
         end
       end
+      return count
     end,
     refilter_queued = function(self)
       local count = 0
@@ -78,9 +80,45 @@ do
     requeue_failed = function(self)
       local db = require("lapis.db")
       db.query("\n      delete from pages where queued_url_id in (\n        select id from queued_urls where " .. tostring(self:_url_clause()) .. " and status = ?\n      )\n    ", QueuedUrls.statuses.failed)
-      return db.update(QueuedUrls:table_name(), {
+      local res = db.update(QueuedUrls:table_name(), {
         status = QueuedUrls.statuses.queued
       }, tostring(self:_url_clause()) .. " and status = ?", QueuedUrls.statuses.failed)
+      return res.affected_rows
+    end,
+    rescan_complete = function(self)
+      local count
+      count = function()
+        return QueuedUrls:count(tostring(self:_url_clause()) .. " and status = ?", QueuedUrls.statuses.queued)
+      end
+      local before_count = count()
+      local pager = QueuedUrls:paginated("\n      where " .. tostring(self:_url_clause()) .. " and status = ?\n      and url like '%/stats'\n\n    ", QueuedUrls.statuses.complete, {
+        per_page = 200,
+        prepare_results = function(urls)
+          Pages:include_in(urls, "queued_url_id", {
+            flip = true
+          })
+          return urls
+        end
+      })
+      for group in pager:each_page() do
+        for _index_0 = 1, #group do
+          local _continue_0 = false
+          repeat
+            local url = group[_index_0]
+            if not (url.page) then
+              _continue_0 = true
+              break
+            end
+            url.scraper = self
+            self:default_handler(url, url.page)
+            _continue_0 = true
+          until true
+          if not _continue_0 then
+            break
+          end
+        end
+      end
+      return count() - before_count
     end,
     run = function(self)
       local run = Runs:create({
@@ -142,7 +180,7 @@ do
       url_opts.normalized_url = self:normalize_url(url_opts.url)
       local save, reason = self:filter_url(url_opts.url)
       if not (save) then
-        return nil, reason or "skipping filter_page"
+        return nil, reason or "skipping from filter_url"
       end
       if not url_opts.force and self:has_url(url_opts.url) then
         return nil, "skipping URL already fetched"
